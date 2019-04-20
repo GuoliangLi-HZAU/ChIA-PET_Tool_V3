@@ -1,0 +1,28 @@
+OUTPUT_DIRECTORY	/home/tksun/tasks/data/java	// modify
+OUTPUT_PREFIX	K562_RNAPII_saturated	// modify
+MODE	0	// 0:short read;1:long read	// modify
+Fastq_file_1	/home/tksun/tasks/data/K562_RNAPII_saturated_1.fastq	// modify
+Fastq_file_2	/home/tksun/tasks/data/K562_RNAPII_saturated_2.fastq	// modify
+linker_file	linker.txt	// file name	// modify
+minimum_linker_alignment_score	8	// modify
+minimum_tag_length	18
+maximum_tag_length	1000
+minSecondBestScoreDiff	3
+output_data_with_ambiguous_linker_info	1
+NTHREADS	4	// the number of threads used in linker filtering and mapping	// modify
+GENOME_INDEX	/home/tksun/tasks/data/genome/human/hg19.fa	// modify
+MAPPING_CUTOFF	30	// cutoff of mapping quality score for filtering out low-quality or multiply-mapped reads
+MERGE_DISTANCE	2
+SELF_LIGATION_CUFOFF	8000
+EXTENSION_LENGTH	500
+MIN_COVERAGE_FOR_PEAK	5	// minimum coverage for peaks by extended reads
+PEAK_MODE	2	// 1:the peak is an enriched region;2:the peak is a local summit
+MIN_DISTANCE_BETWEEN_PEAK	500	// minimum distance between two different peaks
+GENOME_LENGTH	3E9	// 3E9:human;2.7E9:mouse        // modify
+GENOME_COVERAGE_RATIO	0.8	// the proportion of the genome covered by the reads
+PVALUE_CUTOFF_PEAK	0.00001
+CHROM_SIZE_INFO	hg19.chromSize.txt	// file name	// modify
+INPUT_ANCHOR_FILE	null
+PVALUE_CUTOFF_INTERACTION	0.05
+CYTOBAND_DATA	hg19_cytoBandIdeo.txt	// file name	// modify
+SPECIES	1	// 1:human;2:mouse;3:other	// modify
