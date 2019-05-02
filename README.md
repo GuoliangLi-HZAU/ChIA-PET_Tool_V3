@@ -40,8 +40,7 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
     --mode: There are two modes for ChIA-PET Tool V3. 0 for short read, 1 for long read.
     --fastq1: path of read1 fastq file.
     --fastq2: path of read2 fastq file.
-    --linkerA: linker sequence.
-    --linkerB: linker sequence.
+    --linker: linker file.
     --minimum_linker_alignment_score: Specifies the allowed minimum alignment score.
     --GENOME_INDEX: specifies the path of BWA index file.
     --CHROM_SIZE_INFO: specifies the file that contains the length of each chromosome.
@@ -82,7 +81,7 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
     file, please specify the value of this variable as “null” instead. Default: null.
     --PVALUE_CUTOFF_INTERACTION: specifies p-value to filter false positive interactions. Default:0.05.
     
-Especially, the directories of data should be set properly to make sure that the programs could run smoothly. ChIA-PET Tool V3 will create a folder named by `OUTPUT_PREFIX` in the `OUTPUT_DIRECTORY`. The default value of `OUTPUT_DIRECTORY` is in the master folder “`ChIA-PET_Tool_V3/`”, and `OUTPUT_PREFIX` is “out”. Examples of `CHROM_SIZE_INFO` and `CYTOBAND_DATA` are both in the master folder “`ChIA-PET_Tool_V3/chromInfo/`”. We recommend users to select one or create a new one in that folder.
+Especially, the directories of data should be set properly to make sure that the programs could run smoothly. ChIA-PET Tool V3 will create a folder named by `OUTPUT_PREFIX` in the `OUTPUT_DIRECTORY`. The default value of `OUTPUT_DIRECTORY` is in the master folder “`ChIA-PET_Tool_V3/`”, and `OUTPUT_PREFIX` is “out”. Linker files are in the folder "`ChIA-PET_Tool_V3/linker`". Examples of `CHROM_SIZE_INFO` and `CYTOBAND_DATA` are both in the folder “`ChIA-PET_Tool_V3/chromInfo/`”. We recommend users to select one or create a new one in that folder.
 
 The results will be visualized by a HTML file which is in the output folder “`OUTPUT_DIRECTORY/OUTPUT_PREFIX/OUTPUT_PREFIX.ChIA-PET_Report`”.
 
