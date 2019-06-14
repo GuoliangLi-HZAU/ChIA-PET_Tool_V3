@@ -71,20 +71,20 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
     --EXTENSION_LENGTH: specifies the extension length from the location of each tag, which is determined by the 
     median span of the self-ligation PETs. Default: 500.
     --MIN_COVERAGE_FOR_PEAK: specifies the minimum coverage to define peak regions. Default:5.
-    --PEAK_MODE: There are two modes for peak calling. Number 1 is “peak region” mode, which takes all the 
-    overlapping PET regions above the coverage threshold as peak regions, and number 2 is “peak summit” mode, which 
+    --PEAK_MODE: There are two modes for peak calling. Number 1 is “peak region�?mode, which takes all the 
+    overlapping PET regions above the coverage threshold as peak regions, and number 2 is “peak summit�?mode, which 
     takes the highest coverage of overlapping regions as peak regions. Default: 2.
     --MIN_DISTANCE_BETWEEN_PEAK: specifies the minimum distance between two peaks. If the distance of two peak 
     regions is below the threshold, only the one with higher coverage will be kept. Default: 500.
     --GENOME_COVERAGE_RATIO: specifies the estimated proportion of the genome covered by the reads. Default: 0.8.
     --PVALUE_CUTOFF_PEAK: specifies p-value to filter peaks that are not statistically significant. Default: 0.00001. 
     --INPUT_ANCHOR_FILE: a file which contains user-specified anchors for interaction calling. If you don't have this 
-    file, please specify the value of this variable as “null” instead. Default: null.
+    file, please specify the value of this variable as “null�?instead. Default: null.
     --PVALUE_CUTOFF_INTERACTION: specifies p-value to filter false positive interactions. Default:0.05.
     
-Especially, the directories of data should be set properly to make sure that the programs could run smoothly. ChIA-PET Tool V3 will create a folder named by `OUTPUT_PREFIX` in the `OUTPUT_DIRECTORY`. The default value of `OUTPUT_DIRECTORY` is in the master folder “`ChIA-PET_Tool_V3/`”, and `OUTPUT_PREFIX` is “out”. Examples of `CHROM_SIZE_INFO` and `CYTOBAND_DATA` are both in the master folder “`ChIA-PET_Tool_V3/chromInfo/`”. We recommend users to select one or create a new one in that folder.
+Especially, the directories of data should be set properly to make sure that the programs could run smoothly. ChIA-PET Tool V3 will create a folder named by `OUTPUT_PREFIX` in the `OUTPUT_DIRECTORY`. The default value of `OUTPUT_DIRECTORY` is in the master folder “`ChIA-PET_Tool_V3/`�? and `OUTPUT_PREFIX` is “out�? Examples of `CHROM_SIZE_INFO` and `CYTOBAND_DATA` are both in the master folder “`ChIA-PET_Tool_V3/chromInfo/`�? We recommend users to select one or create a new one in that folder.
 
-The results will be visualized by a HTML file which is in the output folder “`OUTPUT_DIRECTORY/OUTPUT_PREFIX/OUTPUT_PREFIX.ChIA-PET_Report`”.
+The results will be visualized by a HTML file which is in the output folder “`OUTPUT_DIRECTORY/OUTPUT_PREFIX/OUTPUT_PREFIX.ChIA-PET_Report`�?
 
 Result File
 ===
@@ -95,11 +95,15 @@ Example of peak file named `OUTPUT_PREFIX`.peak.FDRfiltered.txt
 |chr1 |840305      |840556    |21           |1.18e-08|2.57e-07|
 
 chrom: chromosome name.
+
 summit start: The start coordinate of peak summit.
+
 summit end: The end coordinate of peak summit.
+
 peak coverage: The highest coverage by tags in a peak.
-p-value: This value represents the statistical significance of a peak, which is calculated by Poisson
-distribution.
+
+p-value: This value represents the statistical significance of a peak, which is calculated by Poisson distribution.
+
 p.adjust: P.adjust means p-value adjusted with Benjamini-Hockberg method for multiple hypothesis testing.
 
 Example of interaction file named `OUTPUT_PREFIX`.cluster.FDRfiltered.txt
@@ -109,22 +113,33 @@ Example of interaction file named `OUTPUT_PREFIX`.cluster.FDRfiltered.txt
 |chr7  |562341|563231|chr7  |574231|575143|2          |1   |11901   |3                        |9                        |7.11e-11            |1.99E-10|10.15          |9.7             |
 
 chrom1: The name of the chromosome on which the cluster anchor 1 exists.
+
 start1: The start coordinate of cluster anchor 1.
+
 end1: The end coordinate of cluster anchor 1.
+
 chrom2: The name of the chromosome on which the cluster anchor 2 exists.
+
 start2: The start coordinate of cluster anchor 2.
+
 end2: The end coordinate of cluster anchor 2.
+
 ipet count: Number of PETs between cluster anchor 1 and cluster anchor 2.
-type: Interactions type. 1 represents intra-chromosomal interaction, and 0 represents inter-chromosomal
-interaction.
-distance: Distance between anchors of an intra-chromosomal interaction cluster. If two anchors are located
-on different chromosomes, the value is set to 2,147,483,647.
+
+type: Interactions type. 1 represents intra-chromosomal interaction, and 0 represents inter-chromosomal interaction.
+
+distance: Distance between anchors of an intra-chromosomal interaction cluster. If two anchors are located on different chromosomes, the value is set to 2,147,483,647.
+
 tag count within anchor 1: Number of tags that fall in the cluster anchor 1.
+
 tag count within anchor 2: Number of tags that fall in the cluster anchor 2.
-p-value: This value represents the statistical significance of a chromatin interaction, which is calculated by
-hyper-geometric distribution.
+
+p-value: This value represents the statistical significance of a chromatin interaction, which is calculated by hyper-geometric distribution.
+
 p.adjust: P.adjust means p-value adjusted with Benjamini-Hockberg method for multiple hypothesis testing.
+
 -log10(p-value): The negative logarithm of p-value.
+
 -log10(p.adjust): The negative logarithm of adjusted p-value.
 
 References
