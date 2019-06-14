@@ -28,6 +28,11 @@ Download the ChIA-PET Tool V3 package from https://github.com/GuoliangLi-HZAU/Ch
 Unpack the package using the following command in your selected directory:  
 `$ unzip ChIA-PET_Tool_V3.zip`
 
+Test data sets
+===
+short-read test data set: https://1drv.ms/u/s!AqzVTcWMvT40bhONKvBSCZDxqjA
+long-read test data set: https://1drv.ms/u/s!AqzVTcWMvT40bzU5gKTuxxGRvz8
+
 Usage
 ===
 Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA referring to http://bio-bwa.sourceforge.net/bwa.shtml and configure environment variables of bwa, samools and bamToBed (bedtools). After that, we can simply run it with one command line:
@@ -71,20 +76,20 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
     --EXTENSION_LENGTH: specifies the extension length from the location of each tag, which is determined by the 
     median span of the self-ligation PETs. Default: 500.
     --MIN_COVERAGE_FOR_PEAK: specifies the minimum coverage to define peak regions. Default:5.
-    --PEAK_MODE: There are two modes for peak calling. Number 1 is â€œpeak regionâ€?mode, which takes all the 
-    overlapping PET regions above the coverage threshold as peak regions, and number 2 is â€œpeak summitâ€?mode, which 
+    --PEAK_MODE: There are two modes for peak calling. Number 1 is "peak region" mode, which takes all the 
+    overlapping PET regions above the coverage threshold as peak regions, and number 2 is "peak summit" mode, which 
     takes the highest coverage of overlapping regions as peak regions. Default: 2.
     --MIN_DISTANCE_BETWEEN_PEAK: specifies the minimum distance between two peaks. If the distance of two peak 
     regions is below the threshold, only the one with higher coverage will be kept. Default: 500.
     --GENOME_COVERAGE_RATIO: specifies the estimated proportion of the genome covered by the reads. Default: 0.8.
     --PVALUE_CUTOFF_PEAK: specifies p-value to filter peaks that are not statistically significant. Default: 0.00001. 
     --INPUT_ANCHOR_FILE: a file which contains user-specified anchors for interaction calling. If you don't have this 
-    file, please specify the value of this variable as â€œnullâ€?instead. Default: null.
+    file, please specify the value of this variable as "null" instead. Default: null.
     --PVALUE_CUTOFF_INTERACTION: specifies p-value to filter false positive interactions. Default:0.05.
     
-Especially, the directories of data should be set properly to make sure that the programs could run smoothly. ChIA-PET Tool V3 will create a folder named by `OUTPUT_PREFIX` in the `OUTPUT_DIRECTORY`. The default value of `OUTPUT_DIRECTORY` is in the master folder â€œ`ChIA-PET_Tool_V3/`â€? and `OUTPUT_PREFIX` is â€œoutâ€? Examples of `CHROM_SIZE_INFO` and `CYTOBAND_DATA` are both in the master folder â€œ`ChIA-PET_Tool_V3/chromInfo/`â€? We recommend users to select one or create a new one in that folder.
+Especially, the directories of data should be set properly to make sure that the programs could run smoothly. ChIA-PET Tool V3 will create a folder named by `OUTPUT_PREFIX` in the `OUTPUT_DIRECTORY`. The default value of `OUTPUT_DIRECTORY` is in the master folder "`ChIA-PET_Tool_V3/`" and `OUTPUT_PREFIX` is "out". Examples of `CHROM_SIZE_INFO` and `CYTOBAND_DATA` are both in the master folder "`ChIA-PET_Tool_V3/chromInfo/`". We recommend users to select one or create a new one in that folder.
 
-The results will be visualized by a HTML file which is in the output folder â€œ`OUTPUT_DIRECTORY/OUTPUT_PREFIX/OUTPUT_PREFIX.ChIA-PET_Report`â€?
+The results will be visualized by a HTML file which is in the output folder "`OUTPUT_DIRECTORY/OUTPUT_PREFIX/OUTPUT_PREFIX.ChIA-PET_Report`".
 
 Result File
 ===
