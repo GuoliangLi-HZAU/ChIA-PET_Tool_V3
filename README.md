@@ -1,7 +1,7 @@
 ChIA-PET Tool V3
-===
+=
 Introduction
-===
+=
 Chromatin Interaction Analysis with Paired-End Tag (ChIA-PET) sequencing is a technology to study genome-wide long-range chromatin interactions bound by protein factors. ChIA-PET Tool V3, a software package for automatic processing of ChIA-PET sequence data, including: 
 1.	linker filtering
 2.	mapping the paired-end reads to a reference genome
@@ -12,7 +12,7 @@ Chromatin Interaction Analysis with Paired-End Tag (ChIA-PET) sequencing is a te
 7.	visualizing the results
 
 Install
-===
+=
 Java is a popular platform-independent programming language and can be run on any machines with a Java Virtual Machine (JVM). BWA is used to map ChIA-PET sequencing reads to a reference genome. SAMtools is used to convert the alignment output from SAM format to BAM format. BEDTools is required to convert the files from BAM format to bed format. R environment and its packages are used to compute the p-values in peak calling and interaction calling and generate the graphs for visualization.
 ChIA-PET Tool V3 requires the following softwares:
 1.	JDK>=1.8(https://www.oracle.com/technetwork/java/javase/downloads/index.html)
@@ -29,13 +29,13 @@ Unpack the package using the following command in your selected directory:
 `$ unzip ChIA-PET_Tool_V3.zip`
 
 Test data sets
-===
-short-read test data set: https://1drv.ms/u/s!AqzVTcWMvT40bhONKvBSCZDxqjA
+=
+short-read test data set from human K562 cells: https://1drv.ms/u/s!AqzVTcWMvT40bhONKvBSCZDxqjA
 
-long-read test data set: https://1drv.ms/u/s!AqzVTcWMvT40bzU5gKTuxxGRvz8
+long-read test data set from human GM12878 cells: https://1drv.ms/u/s!AqzVTcWMvT40bzU5gKTuxxGRvz8
 
 Usage
-===
+=
 Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA referring to http://bio-bwa.sourceforge.net/bwa.shtml and configure environment variables of bwa, samools and bamToBed (bedtools). After that, we can simply run it with one command line:
 
 `$ java -jar ChIA-PET.jar [options]`
@@ -92,8 +92,18 @@ Especially, the directories of data should be set properly to make sure that the
 
 The results will be visualized by a HTML file which is in the output folder "`OUTPUT_DIRECTORY/OUTPUT_PREFIX/OUTPUT_PREFIX.ChIA-PET_Report`".
 
-Result File
-===
+Example running
+=
+short-read:
+
+java -jar ChIA-PET.jar --mode 0 --fastq1 test_short_1.fastq --fastq2 test_short_2.fastq --linker ChIA-PET_Tool_V3/linker/linker.txt --minimum_linker_alignment_score 8 --GENOME_INDEX hg19.fa --GENOME_LENGTH 3E9 --CHROM_SIZE_INFO ChIA-PET_Tool_V3/chrInfo/hg19.chromSize.txt --CYTOBAND_DATA ChIA-PET_Tool_V3/chrInfo/hg19_cytoBandIdeo.txt --SPECIES 1 --output test_short --prefix K562 --thread 4
+
+long-read:
+
+java -jar ChIA-PET.jar --mode 1 --fastq1 test_long_1.fastq --fastq2 test_long_2.fastq --linker ChIA-PET_Tool_V3/linker/linker_long.txt --minimum_linker_alignment_score 14 --GENOME_INDEX hg19.fa --GENOME_LENGTH 3E9 --CHROM_SIZE_INFO ChIA-PET_Tool_V3/chrInfo/hg19.chromSize.txt --CYTOBAND_DATA ChIA-PET_Tool_V3/chrInfo/hg19_cytoBandIdeo.txt --SPECIES 1 --output test_long --prefix GM12878 --thread 4
+
+Result file
+=
 Example of peak file named `OUTPUT_PREFIX`.peak.FDRfiltered.txt
 
 |chrom|summit start|summit end|peak coverage|p-value |p.adjust|
@@ -149,7 +159,7 @@ p.adjust: P.adjust means p-value adjusted with Benjamini-Hockberg method for mul
 -log10(p.adjust): The negative logarithm of adjusted p-value.
 
 References
-===
+=
 1.	Li G, Cai L, Chang H, Hong P, Zhou Q, Kulakova EV, Kolchanov NA, Ruan Y. Chromatin Interaction Analysis with Paired-End Tag (ChIA-PET) sequencing technology and application. BMC Genomics, 2014, 15, S11
 2.	Li G, Chen Y, Snyder MP, Zhang MQ. ChIA-PET2: a versatile and flexible pipeline for ChIA-PET data analysis. Nucleic Acids Research, 2016: 1-10
 3.	Li G, Fullwood MJ, Xu H, Mulawadi FH, Velkov S, Vega V, Ariyaratne PN, Mohamed YB, Ooi H, Tennakoon C, Wei C, Ruan Y, Sung W. Software ChIA-PET tool for comprehensive chromatin interaction analysis with paired-end tag sequencing. Genome Biology 2010, 11, R22
@@ -158,5 +168,5 @@ References
 6.	Phanstiel DH, Boyle AP, Heidari N, Snyder MP. Mango: a bias-correcting ChIA-PET analysis pipeline. Genome analysis, 2015, 31: 3092-3098
 
 Contact
-===
+=
 guoliang.li@mail.hzau.edu.cn
