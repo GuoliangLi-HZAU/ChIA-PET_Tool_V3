@@ -35,8 +35,7 @@ short-read test data set is part of RNAPII ChIA-PET data from human K562 cells: 
 long-read test data set is part of CTCF ChIA-PET data from human GM12878 cells: https://1drv.ms/u/s!AqzVTcWMvT40bzU5gKTuxxGRvz8
 
 RNAPII ChIA-PET data from human K562 cells:<br>
-  GSM832464 (https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM832464)<br>
-  GSM832465 (https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM832465)
+  GSM832464 (https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM832464)
   
 CTCF ChIA-PET data from human GM12878 cells:<br>
   GSM1872886 (https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1872886)
@@ -102,10 +101,10 @@ The results will be visualized by a HTML file which is in the output folder "`OU
 Example running
 =
 short-read:<br>
-java -jar ChIA-PET.jar --mode 0 --fastq1 test_short_1.fastq --fastq2 test_short_2.fastq --linker ChIA-PET_Tool_V3/linker/linker.txt --minimum_linker_alignment_score 8 --GENOME_INDEX hg19.fa --GENOME_LENGTH 3E9 --CHROM_SIZE_INFO ChIA-PET_Tool_V3/chrInfo/hg19.chromSize.txt --CYTOBAND_DATA ChIA-PET_Tool_V3/chrInfo/hg19_cytoBandIdeo.txt --SPECIES 1 --output test_short --prefix K562 --thread 4
+java -jar ChIA-PET.jar --mode 0 --fastq1 test_short_1.fastq --fastq2 test_short_2.fastq --linker ChIA-PET_Tool_V3/linker/linker.txt --minimum_linker_alignment_score 8 --GENOME_INDEX hg19.fa --GENOME_LENGTH 3E9 --CHROM_SIZE_INFO ChIA-PET_Tool_V3/chromInfo/hg19.chromSize.txt --CYTOBAND_DATA ChIA-PET_Tool_V3/chromInfo/hg19_cytoBandIdeo.txt --SPECIES 1 --output test_short --prefix K562 --thread 4
 
 long-read:<br>
-java -jar ChIA-PET.jar --mode 1 --fastq1 test_long_1.fastq --fastq2 test_long_2.fastq --linker ChIA-PET_Tool_V3/linker/linker_long.txt --minimum_linker_alignment_score 14 --GENOME_INDEX hg19.fa --GENOME_LENGTH 3E9 --CHROM_SIZE_INFO ChIA-PET_Tool_V3/chrInfo/hg19.chromSize.txt --CYTOBAND_DATA ChIA-PET_Tool_V3/chrInfo/hg19_cytoBandIdeo.txt --SPECIES 1 --output test_long --prefix GM12878 --thread 4
+java -jar ChIA-PET.jar --mode 1 --fastq1 test_long_1.fastq --fastq2 test_long_2.fastq --linker ChIA-PET_Tool_V3/linker/linker_long.txt --minimum_linker_alignment_score 14 --GENOME_INDEX hg19.fa --GENOME_LENGTH 3E9 --CHROM_SIZE_INFO ChIA-PET_Tool_V3/chromInfo/hg19.chromSize.txt --CYTOBAND_DATA ChIA-PET_Tool_V3/chromInfo/hg19_cytoBandIdeo.txt --SPECIES 1 --output test_long --prefix GM12878 --thread 4
 
 Result file
 =
