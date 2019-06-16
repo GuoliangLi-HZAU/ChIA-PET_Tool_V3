@@ -30,9 +30,9 @@ Unpack the package using the following command in your selected directory:
 
 Test data sets
 =
-short-read test data set from human K562 cells: https://1drv.ms/u/s!AqzVTcWMvT40bhONKvBSCZDxqjA
+short-read test data set is part of RNAPII ChIA-PET data from human K562 cells: https://1drv.ms/u/s!AqzVTcWMvT40bhONKvBSCZDxqjA
 
-long-read test data set from human GM12878 cells: https://1drv.ms/u/s!AqzVTcWMvT40bzU5gKTuxxGRvz8
+long-read test data set is part of CTCF ChIA-PET data from human GM12878 cells: https://1drv.ms/u/s!AqzVTcWMvT40bzU5gKTuxxGRvz8
 
 Usage
 =
