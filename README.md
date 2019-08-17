@@ -64,7 +64,8 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
     Other options:
     --start_step: start with which step, 1: linker filtering; 2: mapping to genome; 3: removing redundancy; 4: 
     categorization of PETs; 5: peak calling; 6: interaction calling; 7: visualizing, default: 1"
-    --output: specifies the directory to store the output data from ChIA-PET Tool V3, please specify the absolute path of output directory.
+    --output: specifies the directory to store the output data from ChIA-PET Tool V3, 
+    note: please specify the absolute path of output directory.
     --prefix: specifies the prefix of all the output files, default: out.
     --minimum_tag_length: Specifies the minimum tag length. Tag is the sequence after linker removal. This parameter 
     is better to be set  above 18bp. Default: 18.
