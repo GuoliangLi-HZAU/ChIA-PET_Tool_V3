@@ -37,6 +37,15 @@ public class LocalAlignment {
         scoreMatrix = new int[m + 1][n + 1];
         init();
     }
+    
+    public LocalAlignment(int m, int n, int MismatchScore, int IndelScore) {
+        this.m = m;
+        this.n = n;
+        this.MismatchScore = MismatchScore;
+        this.IndelScore = IndelScore;
+        scoreMatrix = new int[m + 1][n + 1];
+        init();
+    }
 
     public void init() {
         initMatrix(0);
@@ -79,7 +88,7 @@ public class LocalAlignment {
         }
     }
 
-    public void align(String str1, String str2) {
+    public void align(String str1, String str2, int start) { // start should be 17, cause short reads remove
         int length1 = str1.length();
         int length2 = str2.length();
         // adjust the dimension of the score matrix
@@ -102,7 +111,7 @@ public class LocalAlignment {
         // alignment to generate the maximum score
         int index1, index2;
         for (index1 = 0; index1 < length1; index1++) {
-            for (index2 = 17; index2 < length2; index2++) {
+            for (index2 = start; index2 < length2; index2++) {
                 if (str1.charAt(index1) == str2.charAt(index2)) {
                     scoreMatrix[index1 + 1][index2 + 1] = scoreMatrix[index1][index2] + MatchScore;
                 } else {
@@ -118,6 +127,7 @@ public class LocalAlignment {
                     scoreMatrix[index1 + 1][index2 + 1] = 0;
                 }
                 if (maxScore < scoreMatrix[index1 + 1][index2 + 1]) {
+                	//System.out.println(index1 + " " + index2 + " " + maxScore);
                     setMaxScore(scoreMatrix[index1 + 1][index2 + 1]);
                     setMaxI(index1 + 1);
                     setMaxJ(index2 + 1);
@@ -224,7 +234,7 @@ public class LocalAlignment {
             LocalAlignment localAligner = new LocalAlignment(args[0].length(), args[1].length());
             //localAligner.align("AACCGGTT", "ACCGTATT");
             localAligner.setDebugLevel(2);//
-            localAligner.align(args[0], args[1]);
+            localAligner.align(args[0], args[1], 17);
         } else {
             System.out.println("Usage: java LocalAlignment <sequence 1> <sequence 2>");
             System.exit(0);

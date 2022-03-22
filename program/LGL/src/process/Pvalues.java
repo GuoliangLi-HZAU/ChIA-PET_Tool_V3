@@ -27,6 +27,9 @@ public class Pvalues {
 	}
 	
 	public void calculation() {// calculation of p-values
+		p.checkPath(outPrefix+".ipet");
+		p.checkPath(outPrefix+".cluster.filtered");
+		
 		cutIPet(outPrefix+".ipet");
 		cutCluster(outPrefix+".cluster.filtered");
 		String fileName[] = {"anchor1", "anchor2"};
@@ -37,11 +40,15 @@ public class Pvalues {
 		    	if (file1.exists()) {
 		    		if (file2.exists()) {
 		    			if (p.MODE.equals("0")) {
+		    				System.out.println("Short reads mode process clusters filter!!!!\n");
 		    				TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered."+fileName[i], outPrefix+
-		    						".cluster.filtered."+fileName[i]+".tagCount.txt", "1", "2"});
+		    						".cluster.filtered."+fileName[i]+".tagCount.txt", "500", "1"});
 		    			} else {
+		    				System.out.println("Long reads mode process clusters filter!!!!\n");
+		    				//TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered."+fileName[i], outPrefix+
+		    				//		".cluster.filtered."+fileName[i]+".tagCount.txt", "501", "1"});
 		    				TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered."+fileName[i], outPrefix+
-		    						".cluster.filtered."+fileName[i]+".tagCount.txt", "500", "3"});
+				    				".cluster.filtered."+fileName[i]+".tagCount.txt", "500", "1"});
 		    			}
 		    		} else {
 		    			System.out.println("Error: "+file2+" doesn't exist");
@@ -164,16 +171,23 @@ public class Pvalues {
 	}
 	
     public void calculate() {// calculate p-value
+    	p.checkPath(outPrefix+".cluster");
     	String file1 = outPrefix+".cluster.filtered.anchor1.tagCount.txt";
     	String file2 = outPrefix+".cluster.filtered.anchor2.tagCount.txt";
     	pasteTagCount(file1, file2);
     	String line = "R --vanilla --slave --args "+outPrefix+" < "+p.PROGRAM_DIRECTORY+"/RScript/hypergeometric.r";
-    	lf.writeFile(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".pvalues.sh", line, false);
+    	//lf.writeFile(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".pvalues.sh", line, false);
+    	lf.writeFile(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".pvalues.sh", line, false);
     	Shell shell = new Shell();
-        shell.runShell(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".pvalues.sh");
+        //shell.runShell(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".pvalues.sh");
+    	shell.runShell(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".pvalues.sh");
     	file1 = outPrefix+".cluster.filtered";
     	file2 = outPrefix+".petCount.tagCount.txt";
     	String file3 = outPrefix+".pvalue.hypergeo.txt";
+    	p.checkPath(file1);
+    	p.checkPath(file2);
+    	p.checkPath(file3);
+    	
     	pasteCluster(file1, file2, file3);
 		File file = new File(outPrefix+".cluster.FDRfiltered.txt");
 		if (file.exists()) {
@@ -382,7 +396,7 @@ public class Pvalues {
 		    	    	BufferedReader reader3 = new BufferedReader(new FileReader(f3));
 		    	    	String line1 = reader1.readLine();
 		    	    	String line2 = reader2.readLine();
-		    	    	String line3 = reader2.readLine();
+		    	    	String line3 = reader3.readLine();
 		    	    	new File(outPrefix+".cluster.withpvalue.txt").delete();
 		    	    	new File(outPrefix+".cluster.FDRfiltered.txt").delete();
 		    	    	while (line1 != null && line2 != null && line3 != null) {

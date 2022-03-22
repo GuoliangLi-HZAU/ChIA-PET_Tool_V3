@@ -55,6 +55,8 @@ public class MappingProcess implements Runnable {
 				System.out.println(strs1[0]+"<------>"+strs2[0]);
 				continue;
 			}
+			//System.out.println(strs1[0]);
+			
 			if (classify(strs1) == 0 && classify(strs2) == 0) {
 				statistics[0][0]++;
 			} else if (classify(strs1) == 1 && classify(strs2) == 0) {

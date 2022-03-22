@@ -193,9 +193,11 @@ public class PeakCalling {
     	pasteSpetCounts(file1, file2);
     	String line = "R --vanilla --slave --args genomeLengthStr="+p.GENOME_LENGTH+"  genomeCoverageRatioStr="+p.GENOME_COVERAGE_RATIO+
     			" extensionLengthStr="+p.EXTENSION_LENGTH+" outPrefix="+outPrefix+" < "+p.PROGRAM_DIRECTORY+"/RScript/pois.r";
-    	lf.writeFile(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling1.sh", line, false);
+    	//lf.writeFile(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling1.sh", line, false);
+    	lf.writeFile(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".peakcalling1.sh", line, false);
     	Shell shell = new Shell();
-        shell.runShell(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling1.sh");
+        //shell.runShell(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling1.sh");
+    	shell.runShell(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".peakcalling1.sh");
     }
     
     /**
@@ -667,9 +669,11 @@ public class PeakCalling {
     	copy(new File(p.PROGRAM_DIRECTORY+"/ChIA-PET_Report"), new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/files_for_report"));
     	String line = "R --vanilla --slave --args "+p.PROGRAM_DIRECTORY+" "+p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/files_for_report "+p.OUTPUT_PREFIX+" "+
     	p.CYTOBAND_DATA+" "+p.SPECIES+" "+p.MODE+" < "+p.PROGRAM_DIRECTORY+"/RScript/ChIA-PET_Report.r";
-    	lf.writeFile(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh", line, false);
+    	//lf.writeFile(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh", line, false);
+    	lf.writeFile(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh", line, false);
     	Shell shell = new Shell();
-        shell.runShell(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh");
+        //shell.runShell(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh");
+    	shell.runShell(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh");
         File f = new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".ChIA-PET_Report");
         if (f.exists()) {
         	deleteFile(f);

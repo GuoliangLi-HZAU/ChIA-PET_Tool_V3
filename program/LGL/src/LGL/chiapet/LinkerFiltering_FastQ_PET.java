@@ -55,12 +55,21 @@ public class LinkerFiltering_FastQ_PET {
     private int threadNum = 0;
     static int maxThreadNum = 16;
     private Path p;
+	public boolean search_all_linker = false;
+	public String AutoLinker = "true";
     
     public LinkerFiltering_FastQ_PET(Path path) throws IOException {
     	p = path;
     	this.outputFolder = p.getOUTPUT_DIRECTORY()+"/"+p.getOUTPUT_PREFIX();
         this.outputPrefix = p.getOUTPUT_PREFIX();
         this.threadNum = Integer.valueOf(p.getNTHREADS());
+        if(p.search_all_linker.equals("Y")) {
+        	this.search_all_linker = true;
+        }else {
+        	this.search_all_linker = false;
+        }
+        this.AutoLinker = p.AutoLinker;
+        
         if (this.threadNum > maxThreadNum) {
         	System.out.println("Error: parameter error. The maximun numbers of threads must <= " + maxThreadNum);
             System.exit(0);
@@ -178,6 +187,9 @@ public class LinkerFiltering_FastQ_PET {
         ArrayList<String> tempLinkers = new ArrayList<String>();
         String line;
         while ((line = fileIn.readLine()) != null) {
+        	if(line.startsWith("Linker") || line.startsWith("Seq")) {
+        		continue;
+        	}
             if (line.length() <= 1) // skip the short lines
             {
                 continue;
@@ -185,6 +197,11 @@ public class LinkerFiltering_FastQ_PET {
             tempLinkers.add(line.trim());
         }
         fileIn.close();
+        if(tempLinkers.size()==1) {
+	    	String seq2 = LGL.util.SeqUtil.revComplement(tempLinkers.get(0));
+	    	tempLinkers.add(seq2);
+	    }
+        
         this.linkers = new String[tempLinkers.size()];
         this.maxLinkerLength = 0;
         this.minLinkerLength = Integer.MAX_VALUE;
@@ -254,11 +271,18 @@ public class LinkerFiltering_FastQ_PET {
             debug_output = new BufferedWriter(new FileWriter(this.outputFolder + "/" + this.outputPrefix + "debug.LinkerFiltering_FastQ_PET.txt", false));
         }
   
-        File fastq1 = new File(this.fastQFile1);
-        File fastq2 = new File(this.fastQFile2);
-        BigFileProcess bfp = new BigFileProcess(fastq1, fastq2, this, fileOut, threadNum);
-        bfp.start();
-        bfp.join();
+        //File fastq1 = new File(this.fastQFile1);
+        //File fastq2 = new File(this.fastQFile2);
+        String[] fastq1s = this.fastQFile1.split(",");
+	    String[] fastq2s = this.fastQFile2.split(",");
+	    for(int jk = 0; jk < fastq1s.length; jk++) {
+	    	File fastq1 = new File(fastq1s[jk]);
+	        File fastq2 = new File(fastq2s[jk]);
+	        BigFileProcess bfp = new BigFileProcess(fastq1, fastq2, this, fileOut, threadNum);
+	        bfp.start();
+	        bfp.join();
+	    }
+        
 
         for (int i = 0; i < nLinkers; i++) {
             for (int j = 0; j < nLinkers; j++) {

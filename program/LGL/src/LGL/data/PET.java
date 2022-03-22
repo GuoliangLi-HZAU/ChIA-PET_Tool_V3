@@ -278,6 +278,8 @@ public class PET implements Comparable {
             for (int i = 0; i < pets.size();) {
                 if (HIT2.calculateDistance(pet.getHead(), pets.elementAt(i).getHead()) <= distance) {
                     if (HIT2.calculateDistance(pet.getTail(), pets.elementAt(i).getTail()) <= distance) {
+                    	//System.out.printf("%d\t%d", pet.getHead().getLoci(), pets.elementAt(i).getHead().getLoci());
+                    	//System.out.printf("%d\t%d", pet.getTail().getLoci(), pets.elementAt(i).getTail().getLoci());
                         double weight = pet.getWeight() + pets.elementAt(i).getWeight();
                         pet = pets.elementAt(i);
                         pet.setWeight(weight);

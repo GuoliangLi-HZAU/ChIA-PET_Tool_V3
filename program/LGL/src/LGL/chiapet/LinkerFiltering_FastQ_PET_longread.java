@@ -52,12 +52,26 @@ public class LinkerFiltering_FastQ_PET_longread {
     private int threadNum = 0;
     static int maxThreadNum = 16;
     private Path p;
+	public boolean search_all_linker = false;
+	int printallreads = 0; //0 print all, 1 print known +-
+	public String AutoLinker = "true";
+	public String MAP2Linker = "false";
   
     public LinkerFiltering_FastQ_PET_longread(Path path) throws IOException {
     	p = path;
     	this.outputFolder = p.getOUTPUT_DIRECTORY()+"/"+p.getOUTPUT_PREFIX();
         this.outputPrefix = p.getOUTPUT_PREFIX();
         this.threadNum = Integer.valueOf(p.getNTHREADS());
+        if(p.search_all_linker.equals("Y")) {
+        	this.search_all_linker = true;
+        }else {
+        	this.search_all_linker = false;
+        }
+        
+        this.printallreads = p.printallreads;
+        this.AutoLinker = p.AutoLinker;
+        this.MAP2Linker = p.MAP2Linker;
+        
         if (this.threadNum > maxThreadNum) {
         	System.out.println("Error: parameter error. The maximun numbers of threads must <= " + maxThreadNum);
             System.exit(0);
@@ -137,11 +151,19 @@ public class LinkerFiltering_FastQ_PET_longread {
 	    ArrayList<String> localArrayList = new ArrayList<String>();
 	    String str;
 	    while ((str = localBufferedReader.readLine()) != null) {
+	    	if(str.startsWith("Linker") || str.startsWith("Seq")) {
+        		continue;
+        	}
 	    	if (str.length() > 1) {
 	    		localArrayList.add(str.trim());
 	    	}
 	    }
 	    localBufferedReader.close();
+	    if(localArrayList.size()==1) {
+	    	String seq2 = LGL.util.SeqUtil.revComplement(localArrayList.get(0));
+	    	localArrayList.add(seq2);
+	    }
+	    
 		this.linkers = new String[localArrayList.size()];
         this.maxLinkerLength = 0;
         this.minLinkerLength = Integer.MAX_VALUE;
@@ -232,11 +254,17 @@ public class LinkerFiltering_FastQ_PET_longread {
 	    	this.debug_output = new BufferedWriter(new FileWriter(this.outputFolder + "/" + this.outputPrefix + "debug.LinkerFiltering_FastQ_PET.txt", false));
 	    }
 	    
-	    File fastq1 = new File(this.fastQFile1);
-        File fastq2 = new File(this.fastQFile2);
-        BigFileProcess bfp = new BigFileProcess(fastq1, fastq2, this, arrayOfBufferedWriter, threadNum);
-        bfp.start();
-        bfp.join();
+	    //File fastq1 = new File(this.fastQFile1);
+        //File fastq2 = new File(this.fastQFile2);
+	    String[] fastq1s = this.fastQFile1.split(",");
+	    String[] fastq2s = this.fastQFile2.split(",");
+	    for(int jk = 0; jk < fastq1s.length; jk++) {
+	    	File fastq1 = new File(fastq1s[jk]);
+	        File fastq2 = new File(fastq2s[jk]);
+	        BigFileProcess bfp = new BigFileProcess(fastq1, fastq2, this, arrayOfBufferedWriter, threadNum);
+	        bfp.start();
+	        bfp.join();
+	    }
         
 	    for (int k = 0; k < this.nLinkers; k++) {
 	    	for (int m = 0; m < this.nLinkers; m++) {
@@ -460,4 +488,9 @@ public class LinkerFiltering_FastQ_PET_longread {
     public int getmaxRealTagLength() {
     	return maxRealTagLength;
     }
+
+	public int printallreads() {
+		// TODO Auto-generated method stub
+		return printallreads;
+	}
 }

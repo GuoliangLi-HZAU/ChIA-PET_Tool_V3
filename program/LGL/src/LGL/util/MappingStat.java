@@ -16,6 +16,7 @@ public class MappingStat {
 
     int classify;
     int scorecutoff = 20;
+    //int asXs = 20;
     int[][] statistics;
     String[] label;
     String header1 = "";
@@ -25,6 +26,7 @@ public class MappingStat {
 
     public MappingStat(String InputFile1, String InputFile2, String OutputPrefix, String cutoff) throws Exception {
         this.scorecutoff = Integer.parseInt(cutoff);
+        //this.asXs = Integer.parseInt(cutoff);
         BufferedReader fileIn1 = new BufferedReader(new InputStreamReader(new FileInputStream(InputFile1)));
         BufferedReader fileIn2 = new BufferedReader(new InputStreamReader(new FileInputStream(InputFile2)));
         new File(OutputPrefix + ".mapping_statistics.txt").delete();
@@ -70,6 +72,7 @@ public class MappingStat {
                         mapping2 = classify1(line2);
                     }
                 }
+                //System.out.printf("%s\t%d\t---\t%s\t%d\n", fields1[0],mapping1,fields2[0], mapping2);
                 if (mapping1 == 0 && mapping2 == 0) {
                     statistics[0][0]++;
                 } else if (mapping1 == 1 && mapping2 == 0) {
@@ -156,7 +159,8 @@ public class MappingStat {
                 XSs = fields[i].split(":");
             }
         }
-        if ((Integer.parseInt(fields[4]) > scorecutoff) && (Integer.parseInt(ASs[2]) - Integer.parseInt(XSs[2]) > 20) && 
+        if ((Integer.parseInt(fields[4]) > scorecutoff) && 
+        		(Integer.parseInt(ASs[2]) - Integer.parseInt(XSs[2]) > 20) && 
         		((Integer.parseInt(fields[1]) & 0x4) == 0)) {
             classify2 = 1;
         } else if (Integer.parseInt(fields[4]) == 0 || ((Integer.parseInt(fields[1]) & 0x4) != 0)) {

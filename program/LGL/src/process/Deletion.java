@@ -34,7 +34,7 @@ public class Deletion {
 			}
 		}
 		String[] name2 = {".bedpe.qc.dist.txt", ".bedpe.strand.dist.txt",".bedpe.selected.dist.txt", ".bedpe.selected.unique.intra-chrom.strand.dist.txt"};
-		if (p.MODE.equals("0")) {
+		if (p.MODE.equals("0") || p.hichipM.equals("Y")) {
 			String map = ".mapping_statistics.txt";
 			f = new File(path1+map);
 			if (f.exists()) {
@@ -131,8 +131,11 @@ public class Deletion {
     	new File(outPrefix+".temp.txt").delete();
     	new File(outPrefix+".peak.aln").delete();
     	
-    	new File(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".mapping.sh").delete();
-    	new File(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling1.sh").delete();
-    	new File(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".pvalues.sh").delete();
+    	//new File(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".mapping.sh").delete();
+    	//new File(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling1.sh").delete();
+    	//new File(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".pvalues.sh").delete();
+    	new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".mapping.sh").delete();
+    	new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".peakcalling1.sh").delete();
+    	new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".pvalues.sh").delete();
     }
 }

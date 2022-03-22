@@ -383,6 +383,39 @@ public class REGION implements Comparable {
         //Collections.sort(regions);
         return regions;
     }
+    
+    public static Vector<REGION> loadwithfilter(String RegionFile, int minspan, int maxspan) throws IOException {
+        Vector<REGION> regions = new Vector<REGION>();
+        BufferedReader fileIn = new BufferedReader(new InputStreamReader(new FileInputStream(new File(RegionFile))));
+        String line; int start = 0, end = 0;
+        while ((line = fileIn.readLine()) != null) {
+            if (line.length() <= 1) // skip the short lines
+            {
+                continue;
+            }
+            String fields[] = line.split("\t");
+            start = Integer.parseInt(fields[1]);
+            end = Integer.parseInt(fields[2]);
+            if(end-start > maxspan || end-start < minspan) {
+            	continue;
+            }
+            REGION region = new REGION(fields[0], start, end);
+            if (fields.length >= 4) {
+                region.setAnnotation(fields[3]);
+            }
+            if (region.getStart() > region.getEnd()) {
+                System.out.println("start is larger than end: " + region.toString());
+                region.setStart(Integer.parseInt(fields[2]));
+                region.setEnd(Integer.parseInt(fields[1]));
+                System.out.println("exchanged start and end");
+            }
+            regions.add(region);
+        }
+        fileIn.close();
+
+        //Collections.sort(regions);
+        return regions;
+    }
 
     public static void save(String RegionFile, Vector<REGION> regions) throws IOException {
         PrintWriter fileOut = new PrintWriter(new BufferedWriter(new FileWriter(RegionFile)));

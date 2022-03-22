@@ -36,7 +36,7 @@ public class TagCountInGivenRegions {
     Vector<REGION> regions = null;
     Hashtable<RegionConcise, REGION> hashRegionConcise2Region = new Hashtable<RegionConcise, REGION>();
     Hashtable<String, Integer> hashChrom2maxRegionSpans = new Hashtable<String, Integer>();
-    Hashtable<String, ArrayList<RegionConcise>> hashChrom2regionConcise = null;
+    Hashtable<String, ArrayList<RegionConcise>> hashChrom2regionConcise = new Hashtable<String, ArrayList<RegionConcise>>();
     Hashtable<REGION, Integer> hashRegion2tagCount = new Hashtable<REGION, Integer>();
     int extensionLength = 200;
     int extensionMode = 1;
@@ -51,7 +51,7 @@ public class TagCountInGivenRegions {
         regions = REGION.load(regionFile);
         // convert regions to regionConcise
         // and the hashmap to the regions
-        generateRegionConciseHash(regions);
+        generateRegionConciseHash(regions, hashChrom2regionConcise, hashChrom2maxRegionSpans, hashRegionConcise2Region);
         // generate the tag counts for each region: the number of tags in the regions
         generateTagCount(tagFile);
         // output the region clusters
@@ -96,15 +96,25 @@ public class TagCountInGivenRegions {
         if (this.extensionMode == 2) { // extension in both directions
             start = loci - this.extensionLength;
             end = loci + this.extensionLength;
-        } else { // extension from 5' to 3'
-            if (SeqUtil.isForwardStrand(strand) == true) {
-                start = loci;
-                end = loci + this.extensionLength;
-            } else {
+        } else {  // extension from 3' to 5'
+        	if (SeqUtil.isForwardStrand(strand) == true) {
                 start = loci - this.extensionLength;
                 end = loci;
+            } else {
+                start = loci;
+                end = loci + this.extensionLength;
             }
         }
+        
+//        else { // extension from 5' to 3'
+//            if (SeqUtil.isForwardStrand(strand) == true) {
+//                start = loci;
+//                end = loci + this.extensionLength;
+//            } else {
+//                start = loci - this.extensionLength;
+//                end = loci;
+//            }
+//        }
         RegionConcise regionConcise = new RegionConcise(start, end);
 
         int index = Collections.binarySearch(regionConciseList, regionConcise);
@@ -141,11 +151,12 @@ public class TagCountInGivenRegions {
         hashRegion2tagCount.put(region, new Integer(hashRegion2tagCount.get(region).intValue() + 1));
     }
 
-    void generateRegionConciseHash(Vector<REGION> regions) {
-        hashChrom2regionConcise = new Hashtable<String, ArrayList<RegionConcise>>();
+    public static void generateRegionConciseHash(Vector<REGION> regions, Hashtable<String, ArrayList<RegionConcise>> hashChrom2regionConcise,
+    		Hashtable<String, Integer> hashChrom2maxRegionSpans, Hashtable<RegionConcise, REGION> hashRegionConcise2Region) {
+        //hashChrom2regionConcise = new Hashtable<String, ArrayList<RegionConcise>>();
 
         for (REGION region : regions) {
-            updateChrom2regionConciseHash(region);
+            updateChrom2regionConciseHash(region, hashChrom2regionConcise, hashRegionConcise2Region);
         }
 
         for (String chrom : hashChrom2regionConcise.keySet()) {
@@ -165,7 +176,8 @@ public class TagCountInGivenRegions {
         }
     }
 
-    void updateChrom2regionConciseHash(REGION region) {
+    public static void updateChrom2regionConciseHash(REGION region, Hashtable<String, ArrayList<RegionConcise>> hashChrom2regionConcise,
+    		Hashtable<RegionConcise, REGION> hashRegionConcise2Region) {
         String chrom = region.getChrom();
         ArrayList<RegionConcise> regionList = hashChrom2regionConcise.get(chrom);
         if (regionList == null) {
@@ -183,7 +195,9 @@ public class TagCountInGivenRegions {
             new TagCountInGivenRegions(args[0], args[1], args[2], Integer.parseInt(args[3]), Integer.parseInt(args[4]));
         } else {
             System.out.println("Usage: java TagCountInGivenRegions <input_aln_file> <region_file> <output_file> <extensionLength> <extensionMode>");
-            System.out.println("       <extensionMode>: 1 - from 5' to 3';  2 - in both directions");
+            // huang 
+            // System.out.println("       <extensionMode>: 1 - from 5' to 3';  2 - in both directions");
+            System.out.println("       <extensionMode>: 1 - from 3' to 5';  2 - in both directions");
             System.exit(1);
         }
     }

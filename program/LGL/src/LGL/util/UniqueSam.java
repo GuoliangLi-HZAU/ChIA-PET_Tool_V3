@@ -14,6 +14,7 @@ import java.util.Arrays;
  * @author changhd
  */
 public class UniqueSam {
+	
 
     public UniqueSam(String Inputfile, String OutputFile) throws IOException {
         BufferedReader FileIn = new BufferedReader(new InputStreamReader(new FileInputStream(Inputfile)));
@@ -94,7 +95,7 @@ public class UniqueSam {
         FileIn.close();
         fileOut.close();
     }
-
+    
     public static void main(String[] args) throws IOException {
         if (args.length == 2) {
             new UniqueSam(args[0], args[1]);
@@ -102,4 +103,5 @@ public class UniqueSam {
             System.out.println("Usage: java UniqueSam <inputFile> <OutputFile>");
         }
     }
+
 }

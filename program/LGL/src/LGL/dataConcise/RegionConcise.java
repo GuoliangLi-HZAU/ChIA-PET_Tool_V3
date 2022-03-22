@@ -146,6 +146,41 @@ public class RegionConcise implements Comparable {
 
         return overlapped;
     }
+    
+    public static int ISoverlap(Vector regions, RegionConcise Oneregion) {
+        //boolean overlapped = false;
+        int index = Collections.binarySearch(regions, Oneregion);
+        if (index >= 0) {
+            return index;
+        }
+
+        if (index < 0) {
+            index = -index - 1;
+        }
+        if (index >= regions.size()) {
+            index = regions.size() - 1;
+        }
+
+        if (Oneregion.overlap(((Vector<RegionConcise>) regions).elementAt(index)) == true) {
+            return index;
+        }
+
+        // exhaustive search, in case that there is an extreme region to cover the whole chromosome
+        for (int iRegion = index - 1; iRegion >= 0; iRegion--) {
+            if (Oneregion.overlap((RegionConcise) (regions.elementAt(iRegion))) == true) {
+                return iRegion;
+            }
+        }
+        for (int iRegion = index + 1; iRegion < regions.size(); iRegion++) {
+            if (Oneregion.overlap((RegionConcise) (regions.elementAt(iRegion))) == true) {
+                return iRegion;
+            } else {
+                break;
+            }
+        }
+
+        return -1;
+    }
 
     // Assume that there is no region overlapped in "regions"
     // Assume that "regions" is already sorted in ascending order
@@ -198,7 +233,7 @@ public class RegionConcise implements Comparable {
             commonRegionSize = overlappedEnd - anotherRegionConcise.getStart();
         }
 
-        return commonRegionSize;
+        return commonRegionSize + 1; //cause momo think this should be plus 1, no reason, no why
     }
 
     public RegionConcise overlappedRegion(RegionConcise anotherRegionConcise) {

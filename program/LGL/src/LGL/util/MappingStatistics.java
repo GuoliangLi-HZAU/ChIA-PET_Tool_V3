@@ -33,6 +33,7 @@ public class MappingStatistics {
         Arrays.fill(statistics[0], 0);
         Arrays.fill(statistics[1], 0);
         Arrays.fill(statistics[2], 0);
+        //System.out.println("XSCSCSCSCssssss");
     	BigFileProcess bfp = new BigFileProcess(samFile1, samFile2, scorecutoff, this.threadNum, outBedpe, this);
     	bfp.start_mapping();
         bfp.join_mapping();

@@ -19,23 +19,23 @@ public class FastQ {
 
     }
 
-    public static FastQ load(BufferedReader fastqFileIn1) throws IOException {//读取fastq
+    public static FastQ load(BufferedReader fastqFile) throws IOException {//读取fastq
         String[] fastq_temp = new String[4];//暂存读出字符串
         String line;
         int nLines = 0;//读出字符串行数
-        if ((line = fastqFileIn1.readLine()) != null) {
+        if ((line = fastqFile.readLine()) != null) {
             fastq_temp[0] = new String(line);
             nLines++;
         }
-        if ((line = fastqFileIn1.readLine()) != null) {
+        if ((line = fastqFile.readLine()) != null) {
             fastq_temp[1] = new String(line);
             nLines++;
         }
-        if ((line = fastqFileIn1.readLine()) != null) {
+        if ((line = fastqFile.readLine()) != null) {
             fastq_temp[2] = new String(line);
             nLines++;
         }
-        if ((line = fastqFileIn1.readLine()) != null) {
+        if ((line = fastqFile.readLine()) != null) {
             fastq_temp[3] = new String(line);
             nLines++;
         }

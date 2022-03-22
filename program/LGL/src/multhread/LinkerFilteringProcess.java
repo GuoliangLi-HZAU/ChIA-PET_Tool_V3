@@ -163,7 +163,7 @@ public class LinkerFilteringProcess implements Runnable {
         int minJ = -1;// index in sequence
         int barcodeStatus = -1;
         for (int i = 0; i < lfp.getlinkers().length; i++) {
-        	localAligner.align(lfp.getlinkers()[i], seq);
+        	localAligner.align(lfp.getlinkers()[i], seq, lfp.getminimum_tag_length()-1);
             int score = localAligner.getMaxScore();
             if (bestScore < score) {
                 secondBestScore = bestScore;
@@ -200,6 +200,9 @@ public class LinkerFilteringProcess implements Runnable {
         //===^^^ 2013-08-20: set the output tag length as the available reads
         int tag_Start = 0;
         int tag_End = minJ - minI;
+        if(lfp.AutoLinker.equalsIgnoreCase("true") && minI>3) { //can clip shoter than 4
+	    	tag_End = minJ;
+	    }
         if (tag_End < 0) {
             tag_End = 0;
         }

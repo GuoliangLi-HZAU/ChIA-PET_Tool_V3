@@ -43,11 +43,14 @@ package LGL.chiapet;
  */
 import LGL.align.LocalAlignment;
 import LGL.data.FastQ;
+import process.Path;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -55,6 +58,20 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+
+//gz
+//import java.io.BufferedOutputStream;
+//import java.io.BufferedReader;
+//import java.io.FileInputStream;
+//import java.io.FileOutputStream;
+//import java.io.FileReader;
+//import java.io.InputStreamReader;
+import java.util.zip.GZIPInputStream;
+//import java.util.zip.GZIPOutputStream;
+//if gz
+import java.io.RandomAccessFile;
+//time
+//import java.util.Calendar;
 
 /**
  *
@@ -100,14 +117,43 @@ public class LinkerFiltering_FastQ_singleEnd {
     PrintWriter debug_output = null;
 
     String[] letter = {"A", "B", "C", "D", "E", "F"};
-
-    public LinkerFiltering_FastQ_singleEnd(String inputInfoFile, String outputFolder, String outputPrefix) throws IOException {
-        this.inputInfoFile = inputInfoFile;
+    
+	public static boolean isGZipped(File f) {
+		int magic = 0;
+	
+		try {
+			RandomAccessFile raf = new RandomAccessFile(f, "r");
+			magic = raf.read() & 0xff | ((raf.read() << 8) & 0xff00);
+			raf.close();
+		} catch (Throwable e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return magic == GZIPInputStream.GZIP_MAGIC;
+	}
+	
+	//fastq_file linker_file minimum_linker_alignment_score
+	//minimum_tag_length maximum_tag_length minSecondBestScoreDiff
+	//output_data_with_ambiguous_linker_info outpath outprefix
+    public LinkerFiltering_FastQ_singleEnd(
+    		String fastQFile, String linkerFile, String minimum_linker_alignment_score, 
+    		String minimum_tag_length, String maximum_tag_length, String minSecondBestScoreDiff,
+    		String output_data_with_ambiguous_linker_info,
+    		String outputFolder, String outputPrefix) throws IOException {
+        //this.inputInfoFile = inputInfoFile;
         this.outputFolder = outputFolder;
         this.outputPrefix = outputPrefix;
-        System.out.println("[" + rightNow.getTime().toString() + "] start LinkerFiltering_FastQ_singleEnd ... ");
+        this.fastQFile = fastQFile;
+        this.linkerFile = linkerFile;
+        this.minimum_linker_alignment_score = Integer.parseInt(minimum_linker_alignment_score);
+        this.minimum_tag_length = Integer.parseInt(minimum_tag_length);
+        this.maximum_length_tag1 = Integer.parseInt(maximum_tag_length);
+        this.minSecondBestScoreDiff = Integer.parseInt(minSecondBestScoreDiff);
+        this.output_data_with_ambiguous_linker_info = Integer.parseInt(output_data_with_ambiguous_linker_info);
+        
+        System.out.println("[" + rightNow.getTime().toString() + "] Step1: start LinkerFiltering_FastQ_singleEnd ... ");
         // read input information
-        readInputInformation();
+        // end this// readInputInformation();
         // test input information
         testInputInformation();
         //if(false)
@@ -203,7 +249,9 @@ public class LinkerFiltering_FastQ_singleEnd {
     }
 
     public void filterSequenceByLinker() throws IOException {
-        BufferedReader fastqFileIn = new BufferedReader(new InputStreamReader(new FileInputStream(this.fastQFile)));
+    	//BufferedReader fastqFileIn = new BufferedReader(new InputStreamReader(new FileInputStream(this.fastQFile)));
+    	long nPETs = 0;
+        
         // for every linker pair, output a pair of FastQ files
         PrintWriter[] fileOut = new PrintWriter[nLinkers * nLinkers * 2 + 2];
         for (int i = 0; i < nLinkers; i++) {
@@ -220,32 +268,46 @@ public class LinkerFiltering_FastQ_singleEnd {
             debug_output = new PrintWriter(new FileOutputStream(new File(this.outputFolder, this.outputPrefix + "debug.LinkerFiltering_FastQ_PET.txt")));
         }
 
-        long nPETs = 0;
-        FastQ fastQ1 = FastQ.load(fastqFileIn);
-
-        while (fastQ1.getFastq() != null) {
-            processOnePET(fastQ1, fileOut);
-            nPETs++;
-            if (nPETs % 1000000 == 0) {
-                for (int i = 0; i < nLinkers; i++) {
-                    for (int j = 0; j < nLinkers; j++) {
-                        fileOut[(i * nLinkers + j) * 2].flush();
-                        fileOut[(i * nLinkers + j) * 2 + 1].flush();
-                    }
-                }
-                if (this.output_data_with_ambiguous_linker_info == 1) {
-                    fileOut[nLinkers * nLinkers * 2].flush();
-                    fileOut[nLinkers * nLinkers * 2 + 1].flush();
-                }
-                System.out.println((nPETs / 1000000) + " Million PETs processed");
-                if (debug_level >= 2) {
-                    debug_output.flush();
-                }
-            }
-
-            fastQ1 = FastQ.load(fastqFileIn);
-        }
-        fastqFileIn.close();
+        String[] fastqs = this.fastQFile.split(",");
+	    for(int jk = 0; jk < fastqs.length; jk++) {
+	    	BufferedReader fastqFileIn;
+	    	File fastq = new File(fastqs[jk]);
+	    	if(isGZipped(fastq)) {
+				System.out.println("[" + rightNow.getTime().toString() +"] Step1: Linker filtering with gzip fastq file, " + fastqs[jk]);
+				fastqFileIn  = new BufferedReader(
+		                new InputStreamReader(new GZIPInputStream(new FileInputStream(fastq))));
+			}else {
+				System.out.println("[" + rightNow.getTime().toString() +"] Step1: Linker filtering with fastq file, " + fastqs[jk]);
+				fastqFileIn = new BufferedReader(new FileReader(fastq));
+			}
+	    	
+	        FastQ fastQ1 = FastQ.load(fastqFileIn);
+	
+	        while (fastQ1.getFastq() != null) {
+	            processOnePET(fastQ1, fileOut);
+	            nPETs++;
+	            if (nPETs % 1000000 == 0) {
+	                for (int i = 0; i < nLinkers; i++) {
+	                    for (int j = 0; j < nLinkers; j++) {
+	                        fileOut[(i * nLinkers + j) * 2].flush();
+	                        fileOut[(i * nLinkers + j) * 2 + 1].flush();
+	                    }
+	                }
+	                if (this.output_data_with_ambiguous_linker_info == 1) {
+	                    fileOut[nLinkers * nLinkers * 2].flush();
+	                    fileOut[nLinkers * nLinkers * 2 + 1].flush();
+	                }
+	                System.out.println((nPETs / 1000000) + " Million PETs processed");
+	                if (debug_level >= 2) {
+	                    debug_output.flush();
+	                }
+	            }
+	
+	            fastQ1 = FastQ.load(fastqFileIn);
+	        }
+	        fastqFileIn.close();
+    	}
+	    //end process fastq
 
         for (int i = 0; i < nLinkers; i++) {
             for (int j = 0; j < nLinkers; j++) {
@@ -425,7 +487,7 @@ public class LinkerFiltering_FastQ_singleEnd {
         int barcodeStatus = -1;
 
         for (int i = 0; i < this.linkers.length; i++) {
-            localAligner.align(this.linkers[i], seq);
+            localAligner.align(this.linkers[i], seq, minimum_tag_length-1); //17
             int score = localAligner.getMaxScore();
 
             if (bestScore < score) {
@@ -454,6 +516,9 @@ public class LinkerFiltering_FastQ_singleEnd {
         int tag_Start = 0;
 
         int tag_End = minJ - minI;
+        if(minI>3) { //can clip shoter than 4 // lfp.AutoLinker.equalsIgnoreCase("true") &&
+	    	tag_End = minJ;
+	    }
         if (tag_End < 0) {
             tag_End = 0;
         }
@@ -501,6 +566,9 @@ public class LinkerFiltering_FastQ_singleEnd {
         String line;
 
         while ((line = fileIn.readLine()) != null) {
+        	if(line.startsWith("Linker") || line.startsWith("Seq")) {
+        		continue;
+        	}
             if (line.length() <= 1) // skip the short lines
             {
                 continue;
@@ -508,6 +576,10 @@ public class LinkerFiltering_FastQ_singleEnd {
             tempLinkers.add(line);
         }
         fileIn.close();
+        if(tempLinkers.size()==1) {
+	    	String seq2 = LGL.util.SeqUtil.revComplement(tempLinkers.get(0));
+	    	tempLinkers.add(seq2);
+	    }
 
         this.linkers = new String[tempLinkers.size()];
         this.maxLinkerLength = 0;
@@ -671,8 +743,12 @@ public class LinkerFiltering_FastQ_singleEnd {
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length == 3) {
-            new LinkerFiltering_FastQ_singleEnd(args[0], args[1], args[2]);
+        if (args.length == 9) {
+        	//fastq_file linker_file minimum_linker_alignment_score
+        	//minimum_tag_length maximum_tag_length minSecondBestScoreDiff
+        	//output_data_with_ambiguous_linker_info outpath outprefix
+            new LinkerFiltering_FastQ_singleEnd(args[0], args[1], args[2],
+            		args[3], args[4], args[5],args[6], args[7], args[8]);
         } else {
             System.out.println("Usage: java LinkerFiltering_FastQ_singleEnd <Input Information file> <outputFolder> <outputPrefix>");
             System.out.println("Configurations");
