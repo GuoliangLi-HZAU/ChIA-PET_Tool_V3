@@ -79,7 +79,7 @@ public class LinkerFilteringProcess_Long implements Runnable {
 
 	    if((arrayOfInt1[3] >= lfp.getminimum_linker_alignment_score()) 
 	    		&& (arrayOfInt2[3] >= lfp.getminimum_linker_alignment_score()) &&
-	    		lfp.search_all_linker) {
+	    		lfp.search_all_linker ) {
 	    	//System.out.println("search_all_linker mode!!");
 	    	// more than 1 linker in one part-read
 	    	

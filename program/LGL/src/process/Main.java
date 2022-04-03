@@ -3,17 +3,35 @@ package process;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.zip.GZIPInputStream;
 
 import LGL.align.LocalAlignment;
+import LGL.data.FastQ;
+import multhread.BigFileProcess;
 
 public class Main {
+	public static boolean isGZipped(File f) {
+		int magic = 0;
+	
+		try {
+			RandomAccessFile raf = new RandomAccessFile(f, "r");
+			magic = raf.read() & 0xff | ((raf.read() << 8) & 0xff00);
+			raf.close();
+		} catch (Throwable e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return magic == GZIPInputStream.GZIP_MAGIC;
+	}
 	public static void writeFile(String f, String s, boolean append) {
 		File file = new File(f);
 		try {
@@ -460,6 +478,7 @@ public class Main {
 		}
 		
 		if( Integer.valueOf(p.START_STEP) <= 1 && (p.hichipM.equals("Y") || p.hichipM.equals("O") ) ) {
+			p.MERGE_DISTANCE = "-1";
 			System.out.println("[" + rightNow.getTime().toString() +"] HiChIP mode " + p.hichipM);
 			System.out.println("[" + rightNow.getTime().toString() +"] Step1: Checking and processing restriction file ...");
 			if(p.restrictionsiteFile.equals("None")) {
@@ -499,6 +518,35 @@ public class Main {
 					}
 				}
 			}
+			//Total PETs
+			long nPETs_hichip = 0;
+			String[] fastqs = p.Fastq_file_1.split(",");
+		    for(int jk = 0; jk < fastqs.length; jk++) {
+		    	BufferedReader fastqFileIn;
+		    	File fastq = new File(fastqs[jk]);
+		    	if(isGZipped(fastq)) {
+					System.out.println("[" + rightNow.getTime().toString() +"] Counting total pets with gzip fastq file, " + fastqs[jk]);
+					fastqFileIn  = new BufferedReader(
+			                new InputStreamReader(new GZIPInputStream(new FileInputStream(fastq))));
+				}else {
+					System.out.println("[" + rightNow.getTime().toString() +"] Counting total pets with fastq file, " + fastqs[jk]);
+					fastqFileIn = new BufferedReader(new FileReader(fastq));
+				}
+		    	
+		        String readline = fastqFileIn.readLine();
+		
+		        while (readline != null) {
+		        	nPETs_hichip++;
+		            readline = fastqFileIn.readLine();
+		        }
+		        fastqFileIn.close();
+		    }
+		    //BufferedWriter localPrintWriter = new BufferedWriter(new FileWriter(p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + ".basic_statistics.txt", false));
+			BufferedWriter localPrintWriter = new BufferedWriter(new FileWriter(p.OUTPUT_DIRECTORY + "/" +p.OUTPUT_PREFIX+"/" + p.OUTPUT_PREFIX + ".basic_statistics.txt", false));
+		    localPrintWriter.write("Total PETs\t" + nPETs_hichip/4);
+		    localPrintWriter.newLine();
+		    localPrintWriter.close();
+		    
 			p.MODE = "1";
 			if(p.hichipM.equals("O")) {
 				System.out.println("\n[" + rightNow.getTime().toString() +"] Note. Here is HiChiP mode, cause you specified that "

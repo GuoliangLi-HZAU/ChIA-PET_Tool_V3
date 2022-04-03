@@ -18,7 +18,7 @@ public class Path {
 	String Fastq_file_1="";
 	String Fastq_file_2="";
 	String linker;
-	String minimum_linker_alignment_score;
+	String minimum_linker_alignment_score="14";
 	String GENOME_INDEX;
 	String GENOME_LENGTH;
 	String CHROM_SIZE_INFO;
@@ -29,7 +29,7 @@ public class Path {
 	
 	String START_STEP = "1";
 	String STOP_STEP = "100";
-	String OUTPUT_DIRECTORY;
+	String OUTPUT_DIRECTORY="./";
 	String OUTPUT_PREFIX = "out";
 	String minimum_tag_length = "18";
 	String maximum_tag_length = "1000";

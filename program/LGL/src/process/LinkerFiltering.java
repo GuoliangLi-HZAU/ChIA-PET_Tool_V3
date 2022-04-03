@@ -24,7 +24,8 @@ public class LinkerFiltering {
 			if (p.MODE.equals("0")) {
 				new LinkerFiltering_FastQ_PET(p);
 				int lineNum = lineNum(outPrefix+".1_1.R1.fastq") + lineNum(outPrefix+".2_2.R1.fastq");
-		        writeFile(outPrefix+".basic_statistics.txt", "Same-linker PETs after linker filtering\t"+String.valueOf(lineNum/4), true);
+				//Same-linker
+		        writeFile(outPrefix+".basic_statistics.txt", "Valid PETs after linker filtering\t"+String.valueOf(lineNum/4), true);
 			} else {
 				new LinkerFiltering_FastQ_PET_longread(p);
 			}
@@ -41,7 +42,8 @@ public class LinkerFiltering {
 		    	if (strs.length >= 8) {
 		    		int total = Integer.valueOf(strs[1])+Integer.valueOf(strs[2])+Integer.valueOf(strs[3])+Integer.valueOf(strs[5])+Integer.valueOf(strs[6])+
 		    				Integer.valueOf(strs[7]);
-		    		writeFile(outPrefix+".basic_statistics.txt", "Same-linker PETs after linker filtering\t"+String.valueOf(total), true);
+		    		//Same-linker
+		    		writeFile(outPrefix+".basic_statistics.txt", "Valid PETs after linker filtering\t"+String.valueOf(total), true);
 		    	}
 	    	}
 	    }

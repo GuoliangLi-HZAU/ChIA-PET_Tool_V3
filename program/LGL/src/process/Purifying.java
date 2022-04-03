@@ -29,12 +29,14 @@ public class Purifying {
 	
 	private Path p;
 	private String outPrefix;
+	private String yesHiChIP;
 	private LinkerFiltering lf;
 	
 	public Purifying(Path path) {
 		p = path;
 		outPrefix = p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX;
 		lf = new LinkerFiltering(p);
+		yesHiChIP = p.hichipM;
 	}
 	
 	int[] getResSite(String newchr, String nowchr, Hashtable<String, ArrayList<RegionConcise>> hashChrom2regionConcise,
@@ -358,8 +360,13 @@ public class Purifying {
 			    	Integer value = entry.getValue();
 			    	lf.writeFile(outPrefix+".bedpe.selected.unique.intra-chrom.strand.dist.txt", value + " " + strand, true);
 			    }
-			    lf.writeFile(outPrefix+".basic_statistics.txt", "Uniquely Mapped same-linker PETs\t"+selectNum, true);
-			    lf.writeFile(outPrefix+".basic_statistics.txt", "Merging same same-linker PETs\t"+uniqueNum, true);
+			    if(p.hichipM.equals("Y") || p.hichipM.equals("O")) {
+			    	lf.writeFile(outPrefix+".basic_statistics.txt", "Uniquely Mapped PETs\t"+selectNum, true);
+			    	lf.writeFile(outPrefix+".basic_statistics.txt", "Merging same PETs\t"+uniqueNum, true);
+			    }else {
+			    	lf.writeFile(outPrefix+".basic_statistics.txt", "Uniquely Mapped same-linker PETs\t"+selectNum, true);
+			    	lf.writeFile(outPrefix+".basic_statistics.txt", "Merging same same-linker PETs\t"+uniqueNum, true);
+			    }
     		} catch (IOException e) {
 			    e.printStackTrace();
 		    }
@@ -479,8 +486,10 @@ public class Purifying {
     public void combiningData() {
     	String file = outPrefix+".bedpe.selected.pet.txt";
     	int lineNum = spanDistribution(file);
-    	String str = "Merging similar same-linker PETs\t";
-    	lf.writeFile(outPrefix+".basic_statistics.txt", str+lineNum, true);
+    	if(!yesHiChIP.equalsIgnoreCase("Y")) {
+    		String str = "Merging similar same-linker PETs\t";
+    		lf.writeFile(outPrefix+".basic_statistics.txt", str+lineNum, true);
+    	}
     }
     
     /**
