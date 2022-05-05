@@ -319,9 +319,9 @@ public class Main {
 			System.out.println("    --genomefile\tgenome fasta file path, needed for with --ligation_site and without --restrictionsiteFile"
 					+ "\n                only needed for hichip data");
 			System.out.println("    --minfragsize\tMinimum restriction fragment length to consider, default 100");
-			System.out.println("    --maxfragsize\tMaximum restriction fragment length to consider, default 100000");
-			//System.out.println("    --minInsertsize\tMinimum insert size of mapped reads to consider, default 100");
-			//System.out.println("    --maxInsertsize\tMaximum insert size of mapped reads to consider, default 1000");
+			System.out.println("    --maxfragsize\tMaximum restriction fragment length to consider, default 1000000");
+			System.out.println("    --minInsertsize\tMinimum restriction fragment skip of mapped reads to consider, default 1");
+			//System.out.println("    --maxInsertsize\tMaximum restriction fragment skip of mapped reads to consider, default 1000");
 			
 			System.out.println("    --fqmode\tsingle-end or paired-end (default), only required --fastq1 when single-end mode for ChIA-PET data");
 			System.out.println("    --minimum_linker_alignment_score\tminimum alignment score");
