@@ -39,6 +39,7 @@ public class Path {
 	String MAPPING_CUTOFF = "20";
 	String MERGE_DISTANCE = "2";
 	String SELF_LIGATION_CUFOFF = "8000";
+	String provide_slc = "N";
 	String EXTENSION_LENGTH = "500";
 	String MIN_COVERAGE_FOR_PEAK = "5";
 	String PEAK_MODE = "2";
@@ -46,8 +47,10 @@ public class Path {
 	String GENOME_COVERAGE_RATIO = "0.8";
 	String PVALUE_CUTOFF_PEAK = "0.00001";
 	String INPUT_ANCHOR_FILE = "null";
+	String macs2 = "N";
 	String PVALUE_CUTOFF_INTERACTION = "0.05";
 	String FQMODE = "paired-end";
+	String XOR_cluster = "N";
 	public String ALLMAP = "false";
 	public String MAP2Linker = "false";
 	String MAPMEM = "false";
@@ -57,6 +60,7 @@ public class Path {
 	String restrictionsiteFile = "None";
 	//public boolean hichipmode = false;
 	String hichipM = "N";
+	String keeptemp = "N";
 	String ligation_site = "-";
 	String[] ligation_sites;
 	String genomefile = "";
@@ -71,6 +75,8 @@ public class Path {
 	String zipsam = "N";
 	String deletesam = "N";
 	String fastp = "";
+	String skipmap = "N";
+	String MAP_ambiguous = "N";
 	public String AutoLinker = "true";
 	public String kmerlen = "9";
 	public String removeResblock = "Y";
@@ -185,6 +191,10 @@ public class Path {
 				START_STEP = args[i + 1];
 			} else if (args[i].equals("--stop_step")) {
 				STOP_STEP = args[i + 1];
+			} else if (args[i].equals("--map_ambiguous")) {
+				MAP_ambiguous = args[i + 1];
+			} else if (args[i].equals("--skipmap")) {
+				skipmap = args[i + 1];
 			} else if (args[i].equals("--printreadID")) {
 				printreadID = args[i + 1];
 			} else if (args[i].equals("--zipbedpe")) {
@@ -197,10 +207,16 @@ public class Path {
 				printallreads =  Integer.parseInt(args[i + 1]);
 			} else if (args[i].equals("--search_all_linker")) {
 				search_all_linker =  args[i + 1];
+			} else if (args[i].equals("--XOR_cluster")) {
+				XOR_cluster =  args[i + 1];
 			} else if (args[i].equals("--hichip")) {
 				hichipM = args[i + 1];
-				SELF_LIGATION_CUFOFF = "1000";
-			} else if (args[i].equals("--skipResRomove")) {
+				if(provide_slc.equalsIgnoreCase("N")) {
+					SELF_LIGATION_CUFOFF = "1000";
+				}
+			} else if (args[i].equals("--keeptemp")) {
+				keeptemp = args[i + 1];
+			} else if (args[i].equals("--ResRomove")) {
 				removeResblock = args[i + 1];
 			}else if (args[i].equals("--restrictionsiteFile")) {
 				restrictionsiteFile = args[i + 1];
@@ -310,6 +326,7 @@ public class Path {
 				MERGE_DISTANCE = args[i + 1];
 			} else if (args[i].equals("--SELF_LIGATION_CUFOFF")) {
 				SELF_LIGATION_CUFOFF = args[i + 1];
+				provide_slc = "Y";
 			} else if (args[i].equals("--EXTENSION_LENGTH")) {
 				EXTENSION_LENGTH = args[i + 1];
 			} else if (args[i].equals("--MIN_COVERAGE_FOR_PEAK")) {
@@ -344,6 +361,8 @@ public class Path {
     			}
 			} else if (args[i].equals("--INPUT_ANCHOR_FILE")) {
 				INPUT_ANCHOR_FILE = args[i + 1];
+			} else if (args[i].equals("--macs2")) {
+				macs2 = args[i + 1];
 			} else if (args[i].equals("--PVALUE_CUTOFF_INTERACTION")) {
 				PVALUE_CUTOFF_INTERACTION = args[i + 1];
 			} else if (args[i].equals("--CYTOBAND_DATA")) {
@@ -357,6 +376,9 @@ public class Path {
 					System.exit(0);
 				}
 				necessary++;
+			} else {
+				System.out.println("Error: unexpected paramater: " + args[i]);
+				System.exit(0);
 			}
 		}
 		if (necessary < 5 && hichipM.equals("N")) {

@@ -30,7 +30,7 @@ public class InteractionCalling {
 		    file = new File(outPrefix+".pre_cluster.sorted");
 		    if (file.exists()) {
 		    	if (!p.INPUT_ANCHOR_FILE.equals("null")) {
-		    		PetClusterWithGivenAnchors.main(new String[]{outPrefix+".pre_cluster.sorted", p.INPUT_ANCHOR_FILE, outPrefix+".cluster", "1"});
+		    		PetClusterWithGivenAnchors.main(new String[]{outPrefix+".pre_cluster.sorted", p.INPUT_ANCHOR_FILE, outPrefix+".cluster", "1", p.XOR_cluster});
 		    	} else {
 		    		PetCluster2.main(new String[]{outPrefix+".pre_cluster.sorted", outPrefix+".cluster"});
 		    	}

@@ -45,17 +45,19 @@ public class PetClusterWithGivenAnchors {
     String prefix = null;
     int sortingLabel = 0;
     Vector<CLUSTER> clusters = new Vector<CLUSTER>();
+    String XOR_cluster = "N";
 
-    public PetClusterWithGivenAnchors(String preclusterFile, String anchorRegionFile, String prefix, int sortingLabel) throws IOException {
+    public PetClusterWithGivenAnchors(String preclusterFile, String anchorRegionFile, String prefix, int sortingLabel, String XOR_cluster) throws IOException {
         rightNow = Calendar.getInstance();
         System.out.println("[" + rightNow.getTime().toString() + "] start PetClusterWithGivenAnchors ... ");
 
         this.sortingLabel = sortingLabel;
+        this.XOR_cluster = XOR_cluster;
         // load anchors
         anchors = loadAnchors(anchorRegionFile);
         // output file
         this.prefix = prefix;
-        String clusterFileName = new String(prefix + ".cluster.txt");
+        String clusterFileName = new String(prefix);// + ".cluster.txt"
         PrintWriter clusterFileOut = new PrintWriter(new BufferedWriter(new FileWriter(clusterFileName)));
 
         // load inter-ligation PETs
@@ -138,6 +140,14 @@ public class PetClusterWithGivenAnchors {
             if ((headAnchor != null) && (tailAnchor != null)) {
                 anchorCluster = new AnchorCluster(headAnchor, tailAnchor, 1);
                 anchorClusters.add(anchorCluster);
+            }else if(XOR_cluster.equalsIgnoreCase("Y")) {
+            	if(headAnchor != null) {
+            		anchorCluster = new AnchorCluster(headAnchor, new ANCHOR(clusters.elementAt(i).getTail()), 1);
+                    anchorClusters.add(anchorCluster);
+            	}else if(tailAnchor != null) {
+            		anchorCluster = new AnchorCluster(new ANCHOR(clusters.elementAt(i).getHead()), tailAnchor, 1);
+                    anchorClusters.add(anchorCluster);
+            	}
             }
         }
         anchorClusters = mergeAnchorClusters((Vector<AnchorCluster>) anchorClusters);
@@ -201,8 +211,10 @@ public class PetClusterWithGivenAnchors {
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length == 4) {
-            new PetClusterWithGivenAnchors(args[0], args[1], args[2], Integer.valueOf(args[3]));
+        if (args.length == 5) {
+            new PetClusterWithGivenAnchors(args[0], args[1], args[2], Integer.valueOf(args[3]), args[4]);
+        } else if (args.length == 4) {
+            new PetClusterWithGivenAnchors(args[0], args[1], args[2], Integer.valueOf(args[3]), "N");
         } else {
             System.out.println("Usage: java PetClusterWithGivenAnchors <preclusterFile> <given_anchor_file> <prefix> <sortingLabel>");
             System.out.println("  sortingLabel:  1 - sort the head and tail anchors in ascending order");

@@ -309,12 +309,12 @@ public class Main {
 					+ "\n                or the site of enzyme digestion, A^AGCTT, ^GATC, ^GATC, A^GATCT, G^ANTC, CATG^, AG^CT or others."
 					+ "\n                multipe restriction enzyme can be seperated by comma, such as G^ANTC,^GATC."
 					+ "\n                restriction site with '^' and contains 'ATCG' without other character!!! "
-					+ "\n                if the genomic enzyme digestion file --restrictionsitefile is provided,"
+					+ "\n                if the genomic enzyme digestion file --restrictionsiteFile is provided,"
 					+ "\n                this parameter does not need to be provided. "
 					+ "\n                only needed for hichip data");
-			System.out.println("    --skipResRomove\tY or N, whether remove PET in same restriction contig.");
+			System.out.println("    --ResRomove\tY or N, whether remove PET in same restriction contig. default: Y");
 			System.out.println("    --restrictionsiteFile\trestriction site file, can be genarated while has --ligation_site and without this paramater or "
-					+ "\n                provide restriction enzyme information with --ligation_ Site, we will automatically generate the file."
+					+ "\n                provide restriction enzyme information with --ligation_site, we will automatically generate the file."
 					+ "\n                only needed for hichip data");
 			System.out.println("    --genomefile\tgenome fasta file path, needed for with --ligation_site and without --restrictionsiteFile"
 					+ "\n                only needed for hichip data");
@@ -366,6 +366,11 @@ public class Main {
 			System.out.println("    --zipbedpe\tgzip bedpe related file, after analysis done. default: N. Y for gzip, N for not.");
 			System.out.println("    --zipsam\tConvert sam file to bam, after analysis done. default: N");
 			System.out.println("    --deletesam\tDelete sam files. default: N");
+			System.out.println("    --keeptemp\tKeep temp sam and bedpe file. default: N");
+			System.out.println("    --map_ambiguous\tAlso mapping ambiguous reads without linker. default: N");
+			System.out.println("    --skipmap\tSkip mapping read1 and read2, start from paired R1.sam and R2.sam, only valid in HiChIP mode now. default: N");
+			System.out.println("    --macs2\tmacs2 path, using macs2 callpeak to detect anchor peak with alignment file. default: N");
+			System.out.println("    --XOR_cluster\tWhether keep loops if only one side of anchor is overlap with peak. default: N");
 			System.exit(0);
 		}
 		
@@ -388,6 +393,41 @@ public class Main {
 		Calendar rightNow = Calendar.getInstance();
 		System.out.println("[" + rightNow.getTime().toString() +"] start ChIA-PET analysis");
 		
+		if(p.skipmap.equalsIgnoreCase("Y")) {
+			if(Integer.valueOf(p.START_STEP) <= 1) {
+				p.START_STEP = "2";
+			}
+			
+			//Total PETs
+			long nPETs_hichip = 0;
+			String[] fastqs = p.Fastq_file_1.split(",");
+		    for(int jk = 0; jk < fastqs.length; jk++) {		    	
+		    	BufferedReader fastqFileIn;
+		    	File fastq = new File(fastqs[jk]).getCanonicalFile();
+		    	if(isGZipped(fastq)) {
+					System.out.println("[" + rightNow.getTime().toString() +"] Counting total pets with gzip fastq file, " + fastqs[jk]);
+					fastqFileIn  = new BufferedReader(
+			                new InputStreamReader(new GZIPInputStream(new FileInputStream(fastq))));
+				}else {
+					System.out.println("[" + rightNow.getTime().toString() +"] Counting total pets with fastq file, " + fastqs[jk]);
+					fastqFileIn = new BufferedReader(new FileReader(fastq));
+				}
+		    	
+		        String readline = fastqFileIn.readLine();
+		
+		        while (readline != null) {
+		        	nPETs_hichip++;
+		            readline = fastqFileIn.readLine();
+		        }
+		        fastqFileIn.close();
+		    }
+		    //BufferedWriter localPrintWriter = new BufferedWriter(new FileWriter(p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + ".basic_statistics.txt", false));
+			BufferedWriter localPrintWriter = new BufferedWriter(new FileWriter(p.OUTPUT_DIRECTORY + "/" +p.OUTPUT_PREFIX+"/" + p.OUTPUT_PREFIX + ".basic_statistics.txt", false));
+		    localPrintWriter.write("Total PETs\t" + nPETs_hichip/4);
+		    localPrintWriter.newLine();
+		    localPrintWriter.close();
+		}
+		
 		long time = System.currentTimeMillis() / 1000;
 		System.out.println("[" + rightNow.getTime().toString() +"] Step0: fastq mode " + p.FQMODE);
 		
@@ -400,7 +440,7 @@ public class Main {
 				}
 			}
 		    time = System.currentTimeMillis() / 1000;
-		    System.out.println("[" + rightNow.getTime().toString() +"] Step1: clean fastq " + p.fastp);
+		    System.out.println("[" + rightNow.getTime().toString() +"] Step1: clean fastq with " + p.fastp);
 		    String[] newfqs = CleanFastq(p.Fastq_file_1, p.Fastq_file_2, p.NTHREADS, p.OUTPUT_DIRECTORY, p.OUTPUT_PREFIX);
 		    p.Fastq_file_1 = newfqs[0];
 		    p.Fastq_file_2 = newfqs[1];
@@ -481,40 +521,42 @@ public class Main {
 			p.MERGE_DISTANCE = "-1";
 			System.out.println("[" + rightNow.getTime().toString() +"] HiChIP mode " + p.hichipM);
 			System.out.println("[" + rightNow.getTime().toString() +"] Step1: Checking and processing restriction file ...");
-			if(p.restrictionsiteFile.equals("None")) {
-				if(!p.ligation_site.equals("-")) {
-					System.out.println("[" + rightNow.getTime().toString() +"] Without restriction file, generating by ligation site!!!");
-					//generate res file by ligation site
-					File Gefile = new File(p.genomefile); 
-					if (!Gefile.exists()) {
-						System.out.println("Warning: Unvalid genome file path!!! "
-								+ p.genomefile);
+			if(p.removeResblock.equals("Y")) {
+				if(p.restrictionsiteFile.equals("None")) {
+					if(!p.ligation_site.equals("-")) {
+						System.out.println("[" + rightNow.getTime().toString() +"] Without restriction file, generating by ligation site!!!");
+						//generate res file by ligation site
+						File Gefile = new File(p.genomefile); 
+						if (!Gefile.exists()) {
+							System.out.println("Warning: Unvalid genome file path!!! "
+									+ p.genomefile);
+							System.exit(0);
+						}
+						p.restrictionsiteFile = p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + "/" + p.OUTPUT_PREFIX +".res.bed";
+						split_genome_byressite(p.genomefile, p.ligation_sites, p.restrictionsiteFile, p.ligation_site);
+						
+						//System.exit(0);
+					}else {
+						System.out.println("Here is HiChiP mode, please defind --restrictionsiteFile or --ligation_site!!!!");
 						System.exit(0);
 					}
-					p.restrictionsiteFile = p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + "/" + p.OUTPUT_PREFIX +".res.bed";
-					split_genome_byressite(p.genomefile, p.ligation_sites, p.restrictionsiteFile, p.ligation_site);
-					
-					//System.exit(0);
 				}else {
-					System.out.println("Here is HiChiP mode, please defind --restrictionsiteFile or --ligation_site!!!!");
-					System.exit(0);
-				}
-			}else {
-				//check file path is valid
-				File resfile = new File(p.restrictionsiteFile); 
-				if (!resfile.exists()) {
-					System.out.println("Warning: Unvalid restriction file path!!! "
-							+ p.restrictionsiteFile + ", please define valid path or "
-									+ "\njust provide --ligation_site and remove --restrictionsiteFile paramater,"
-									+ "\nthen pragram will generate restriction site file !!!\n");
-					System.exit(0);
-				}else {
-					System.out.println("[" + rightNow.getTime().toString() +"] Valid restriction file path, "
-							+ p.restrictionsiteFile );
-					if(p.hichipM.equals("O")) {
-					    System.out.println("[" + rightNow.getTime().toString() +"] We will not regenerate again. If you want to regenerate a new enzyme digestion site file, "
-									+ "\n                please remove the --restrictionsitefile parameter and run the program again. "
-									+ "\n                And then we will generate the corresponding enzyme digestion file in the specified output directory.");
+					//check file path is valid
+					File resfile = new File(p.restrictionsiteFile); 
+					if (!resfile.exists()) {
+						System.out.println("Warning: Unvalid restriction file path!!! "
+								+ p.restrictionsiteFile + ", please define valid path or "
+										+ "\njust provide --ligation_site and remove --restrictionsiteFile paramater,"
+										+ "\nthen pragram will generate restriction site file !!!\n");
+						System.exit(0);
+					}else {
+						System.out.println("[" + rightNow.getTime().toString() +"] Valid restriction file path, "
+								+ p.restrictionsiteFile );
+						if(p.hichipM.equals("O")) {
+						    System.out.println("[" + rightNow.getTime().toString() +"] We will not regenerate again. If you want to regenerate a new enzyme digestion site file, "
+										+ "\n                please remove the --restrictionsitefile parameter and run the program again. "
+										+ "\n                And then we will generate the corresponding enzyme digestion file in the specified output directory.");
+						}
 					}
 				}
 			}
@@ -674,6 +716,28 @@ public class Main {
 		}
 		
 		if (Integer.valueOf(p.START_STEP) <= 5) {
+			//macs2
+			if(!p.macs2.equalsIgnoreCase("N")) {
+				if(!p.INPUT_ANCHOR_FILE.equals("null")) {
+					System.out.println("** Warning **: you simutately provide --INPUT_ANCHOR_FILE and --macs2 Y, we will"
+							+ " run macs2 call peak instead of your provide --INPUT_ANCHOR_FILE file.");
+				}
+				rightNow = Calendar.getInstance();
+				System.out.println("[" + rightNow.getTime().toString() +"] Step5: Calling peak with macs2 ...");
+				String outPrefix = p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + "/" + p.OUTPUT_PREFIX;
+				BufferedWriter macs2F = new BufferedWriter(new FileWriter(outPrefix + 
+						".callpeak.macs2.sh", false));
+				String runcmd = "macs2 callpeak -t " + outPrefix+ "*.merge.srt.sam --nomodel --keep-dup all -q 0.01 -g "+
+						p.GENOME_LENGTH + " -n " + outPrefix;// + " --extsize 147";
+				macs2F.write(runcmd);
+				macs2F.newLine();
+				macs2F.close();
+		    	Shell shell = new Shell();
+				shell.runShell(outPrefix + ".callpeak.macs2.sh");
+				new File(outPrefix + ".callpeak.macs2.sh").delete();
+				p.INPUT_ANCHOR_FILE = outPrefix+ "_peaks.narrowPeak";
+			}
+			
 			rightNow = Calendar.getInstance();
 			System.out.println("[" + rightNow.getTime().toString() +"] Step5: Interaction Calling ...");
 			InteractionCalling interactionCalling = new InteractionCalling(p);

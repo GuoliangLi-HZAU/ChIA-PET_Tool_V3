@@ -34,7 +34,7 @@ public class AnchorCluster implements Comparable {
         this.iPets_between = iPets_between;
         this.score = 0.0;
         this.bSearched = 0;
-        this.petIndexes = "";
+        this.petIndexes = "---";
         sortHeadTail();
     }
 

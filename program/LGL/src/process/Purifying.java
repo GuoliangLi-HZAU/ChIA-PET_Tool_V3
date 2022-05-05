@@ -103,7 +103,7 @@ public class Purifying {
         return finalR;
 	}
 	
-	public void removePETinsameblock(String bedpefile, String filterbedpefile) throws IOException {
+	public void removePETinsameblock(String bedpefile, String filterbedpefile, String sameresbedpefile) throws IOException {
 		Hashtable<RegionConcise, REGION> hashRegionConcise2Region = new Hashtable<RegionConcise, REGION>();
 	    Hashtable<String, Integer> hashChrom2maxRegionSpans = new Hashtable<String, Integer>();
 	    Hashtable<String, ArrayList<RegionConcise>> hashChrom2regionConcise = new Hashtable<String, ArrayList<RegionConcise>>();;
@@ -114,6 +114,7 @@ public class Purifying {
 		
 		//
 		BufferedWriter filterbedpeBufferedWriter = new BufferedWriter(new FileWriter(filterbedpefile));
+		BufferedWriter sameresbedpeBufferedWriter = new BufferedWriter(new FileWriter(sameresbedpefile));
         BufferedReader bedpefileP = new BufferedReader(
         		new InputStreamReader(new FileInputStream(new File( bedpefile ))));
         String line;
@@ -153,11 +154,16 @@ public class Purifying {
                 newline = line + "\t" + ResSite1 + "\t" + ResSite2 + "\t" + fragmentsize;
                 filterbedpeBufferedWriter.write(newline);
                 filterbedpeBufferedWriter.newLine();
+            }else {
+            	newline = line + "\t" + ResSite1 + "\t" + ResSite2 + "\tN";
+            	sameresbedpeBufferedWriter.write(newline);
+            	sameresbedpeBufferedWriter.newLine();
             }
             
         }
         bedpefileP.close();
         filterbedpeBufferedWriter.close();
+        sameresbedpeBufferedWriter.close();
 	}
 	
     public void Purify() throws IOException {// purifying the mapped reads
@@ -166,9 +172,9 @@ public class Purifying {
 		if(p.hichipM.equals("Y")) {
 			//remove and filter pet in same restriction block
 			if(p.removeResblock.equals("Y")) {
-				removePETinsameblock(outPrefix+".bedpe", outPrefix+".bedpe.filter.byres");
+				removePETinsameblock(outPrefix+".bedpe", outPrefix+".bedpe.filter.byres", outPrefix+".bedpe.insameres");
+				bedpefile = outPrefix+".bedpe.filter.byres";
 			}
-			bedpefile = outPrefix+".bedpe.filter.byres";
 		}
     	File file = new File(bedpefile);
     	if (file.exists()) {

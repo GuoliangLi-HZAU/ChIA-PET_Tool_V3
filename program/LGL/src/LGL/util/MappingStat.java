@@ -23,9 +23,13 @@ public class MappingStat {
     String header2 = "";
     String sequences1 = "";
     String sequences2 = "";
+    int as_xs = 20;
 
-    public MappingStat(String InputFile1, String InputFile2, String OutputPrefix, String cutoff) throws Exception {
+    public MappingStat(String InputFile1, String InputFile2, String OutputPrefix, String cutoff, String runmode) throws Exception {
         this.scorecutoff = Integer.parseInt(cutoff);
+        if(runmode.equalsIgnoreCase("HiChIP")) {
+        	this.as_xs = 2;
+        }
         //this.asXs = Integer.parseInt(cutoff);
         BufferedReader fileIn1 = new BufferedReader(new InputStreamReader(new FileInputStream(InputFile1)));
         BufferedReader fileIn2 = new BufferedReader(new InputStreamReader(new FileInputStream(InputFile2)));
@@ -160,8 +164,8 @@ public class MappingStat {
             }
         }
         if ((Integer.parseInt(fields[4]) > scorecutoff) && 
-        		(Integer.parseInt(ASs[2]) - Integer.parseInt(XSs[2]) > 20) && 
-        		((Integer.parseInt(fields[1]) & 0x4) == 0)) {
+        		(Integer.parseInt(ASs[2]) - Integer.parseInt(XSs[2]) >= as_xs) && 
+        		((Integer.parseInt(fields[1]) & 0x4) == 0)) {// why as_xs 20????
             classify2 = 1;
         } else if (Integer.parseInt(fields[4]) == 0 || ((Integer.parseInt(fields[1]) & 0x4) != 0)) {
             classify2 = 0;
@@ -172,8 +176,8 @@ public class MappingStat {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length == 4) {
-            new MappingStat(args[0], args[1], args[2], args[3]);
+        if (args.length == 5) {
+            new MappingStat(args[0], args[1], args[2], args[3], args[4]);
         } else {
             System.out.println("Usage: java MappingStat <inputFile1> <inputFile1> <outputPrefix> <mappingCutOff>");
         }

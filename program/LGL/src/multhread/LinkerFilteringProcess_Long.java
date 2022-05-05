@@ -54,16 +54,19 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		}
 	}
 
-	public int alignsegpart(String seq1, String seq2, int start1, int end1, int start2, int end2) throws IOException {
-		int newscore = -1;
+	public int[] alignsegpart(String seq1, String seq2, int start1, int end1, int start2, int end2) throws IOException {
+		int[] scorearray = new int[2];
+		scorearray[0] = -1;
+		scorearray[1] = 100;
 		if(end1-start1<13 || end2-start2<13) {
-			return newscore;
+			return scorearray;
 		}
 		String three1 = seq1.substring(start1, end1);
 		String five2 = SeqUtil.revComplement(seq2.substring(start2, end2));
-		newscore = getlocalAlignmaxScore(three1, five2);
+		
+		scorearray = getlocalAlignmaxScore(three1, five2);
 		//System.out.println(three1+" "+five2+" "+newscore);
-		return newscore;
+		return scorearray;
 	}
 	public void processOnePET(FastQMulthread fastQ1, FastQMulthread fastQ2) throws IOException {
 	    int[] arrayOfInt1 = processOneSequence(fastQ1.getFastq()[1], 0);
@@ -75,7 +78,68 @@ public class LinkerFilteringProcess_Long implements Runnable {
 	    // read1 and read2 align score > set minimum score 14, then process more than 1 linker case
 	    int Noverlap1 = 1;
     	int Noverlap2 = 1;
-    	int newscore = -1;
+    	int[] newscore = new int[2];
+    	//实际上一条read存在两个及以上linker，不合理。
+    	//中间那么短？蛋白包裹那么短？
+    	int write1_2 = -1, write2_2 = -1;
+    	int len1 = 0;
+    	int len2 = 0;
+  
+    	if((arrayOfInt1[3] >= lfp.getminimum_linker_alignment_score()) 
+	    		&& (arrayOfInt2[3] >= lfp.getminimum_linker_alignment_score()) ){
+    		//System.out.println("-- " + arrayOfInt1[7] + " " + arrayOfInt2[7]);
+    		//index, array1 array2, 0 0 0 1_1, 0 1 8 1_2, 1 0 16 2_1, 1 1 24 2_2
+	    	//index = (arrayOfInt1[2] * lfp.getnLinkers() + arrayOfInt2[2]) * 8;
+	    	len1 = fastQ1.getFastq()[1].length() - arrayOfInt1[7]-1;
+	    	len2 = fastQ2.getFastq()[1].length() - arrayOfInt2[7]-1;
+	    	int maxlen = len1>=len2?len1:len2;
+	    	
+	    	//
+	    	if(maxlen>18) {
+	    		if( maxlen == len1) {
+	    			newscore = alignsegpart(fastQ1.getFastq()[1], fastQ2.getFastq()[1], arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), 
+	    				0, arrayOfInt2[5]-arrayOfInt2[6]);
+	    			if(newscore[0]<14 || ((double)newscore[0]/newscore[1]<0.9) ) {
+	        			//System.out.println("1.2 " + newscore);
+	        			//print 1.2
+	        			//write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index);
+	    				write1_2 = 1;
+	        		}
+	    		}else {
+	    			newscore = alignsegpart(fastQ1.getFastq()[1], fastQ2.getFastq()[1], 0, arrayOfInt1[5]-arrayOfInt1[6],
+	    					arrayOfInt2[7]+1, fastQ2.getFastq()[1].length() );
+	    			if(newscore[0]<14 || ((double)newscore[0]/newscore[1]<0.9)) {
+	        			//System.out.println("2.2 " + newscore);
+	        			//print 2.2
+	    				//write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index);
+	    				write2_2 = 1;
+	    			}
+	    		}
+	    	}
+    	}else if(arrayOfInt1[3] >= lfp.getminimum_linker_alignment_score()) {
+    		len1 = fastQ1.getFastq()[1].length() - arrayOfInt1[7]-1;
+    		if( fastQ1.getFastq()[1].length() - arrayOfInt1[7]-1 > 18) {
+    			newscore = alignsegpart(fastQ1.getFastq()[1], fastQ2.getFastq()[1], arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), 
+    				0, fastQ2.getFastq()[1].length());
+    			if(newscore[0]<14 || ((double)newscore[0]/newscore[1]<0.9)) {
+        			//print 1.2
+    				//write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index);
+    				write1_2 = 1;
+    			}
+    		}
+    	}else if(arrayOfInt2[3] >= lfp.getminimum_linker_alignment_score()) {
+    		len2 = fastQ2.getFastq()[1].length() - arrayOfInt2[7]-1;
+    		if( fastQ2.getFastq()[1].length() - arrayOfInt2[7]-1 > 18) {
+    			newscore = alignsegpart(fastQ1.getFastq()[1], fastQ2.getFastq()[1], 0, fastQ1.getFastq()[1].length(),
+    					arrayOfInt2[7]+1, fastQ2.getFastq()[1].length() );
+    			if(newscore[0]<14 || ((double)newscore[0]/newscore[1]<0.9)) {
+        			//System.out.println("2.2 " + newscore + " " + (arrayOfInt2[7]+1) + " " + fastQ2.getFastq()[1].length());
+        			//print 2.2
+    				//write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index);
+    				write2_2 = 1;
+    			}
+    		}
+    	}
 
 	    if((arrayOfInt1[3] >= lfp.getminimum_linker_alignment_score()) 
 	    		&& (arrayOfInt2[3] >= lfp.getminimum_linker_alignment_score()) &&
@@ -123,12 +187,13 @@ public class LinkerFilteringProcess_Long implements Runnable {
 	    		index2[5] = 1;
 	    	}
 	    	
+	    	
 	    	for(int nl = 0; nl<4; nl+=2) {
 	    		for(int nk = 0; nk < 6; nk+=2) {
 	    			int minlen = (index1[nl+1]-index1[nl]<index2[nk+1]-index2[nk])?(index1[nl+1]-index1[nl]):(index2[nk+1]-index2[nk]);
 	    			//System.out.println("sss " + index1[nl] + " " + index1[nl+1] + " "+ index2[nk] + " " + index2[nk+1]);
 	    			newscore = alignsegpart(fastQ1.getFastq()[1], fastQ2.getFastq()[1], index1[nl], index1[nl+1], index2[nk], index2[nk+1]);
-	        	    if( (float)newscore/minlen > 0.8 ) {
+	        	    if( (float)newscore[0]/minlen > 0.8 ) {
 	        	    	Noverlap1 = nl/2+1;
 	    		    	Noverlap2 = nk/2;
 	    		    	//System.out.println("overlapscore " + Noverlap1 + " " + Noverlap2 + " " + newscore);
@@ -181,6 +246,10 @@ public class LinkerFilteringProcess_Long implements Runnable {
         		lfp.setlinkerCompositionDistribution(arrayOfInt1[2], arrayOfInt2[2], lfp.getlinkerCompositionDistribution(arrayOfInt1[2], arrayOfInt2[2]) +
         				1);
         	}
+	    	//write1 reverse comp 0-1
+	    	//write2 0-1
+	    	//write3 rc all
+	    	//write4 all
 	    	synchronized(arrayOfBufferedWriter) {
 		    	if ((i <= 55) && (j <= 55)) {
 		    		if (lfp.getflip_head_tag() == 1) {
@@ -199,6 +268,12 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    			}else
 		    			    write2(fastQ2, arrayOfInt2, index + 1);
 		    		}
+		    		if(write1_2 == 1) {
+		    			write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index);
+		    		}
+		    		if(write2_2 == 1) {
+		    			write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+1);
+		    		}
 		    	} else if ((i <= 55) && (j > 55)) {
 		    		if (lfp.getflip_head_tag() == 1) {
 		    			write1(fastQ1, arrayOfInt1, index + 2);
@@ -215,6 +290,20 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    				write1(fastQ2, arrayOfInt2, index+3);
 		    			}else
 		    			    write2(fastQ2, arrayOfInt2, index + 3);
+		    		}
+		    		if(write1_2 == 1) {
+		    			if(len1<55) {
+		    				write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+2);
+		    			}else {
+		    				write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+3);
+		    			}
+		    		}
+		    		if(write2_2 == 1) {
+		    			if(len2<55) {
+		    				write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+2);
+		    			}else {
+		    				write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+3);
+		    			}
 		    		}
 		    	} else if ((i > 55) && (j <= 55)) {
 		    		if (lfp.getflip_head_tag() == 1) {
@@ -233,6 +322,20 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    			}else
 		    			    write2(fastQ2, arrayOfInt2, index + 5);
 		    		}
+		    		if(write1_2 == 1) {
+		    			if(len1<55) {
+		    				write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+5);
+		    			}else {
+		    				write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+4);
+		    			}
+		    		}
+		    		if(write2_2 == 1) {
+		    			if(len2<55) {
+		    				write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+5);
+		    			}else {
+		    				write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+4);
+		    			}
+		    		}
 		    	} else {
 		    		if (lfp.getflip_head_tag() == 1) {
 		    			write1(fastQ1, arrayOfInt1, index + 6);
@@ -249,6 +352,12 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    				write1(fastQ2, arrayOfInt2, index+7);
 		    			}else
 		    			    write2(fastQ2, arrayOfInt2, index + 7);
+		    		}
+		    		if(write1_2 == 1) {
+		    			write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+6);
+		    		}
+		    		if(write2_2 == 1) {
+		    			write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+7);
 		    		}
 			    }
 	    	}
@@ -286,6 +395,9 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    		} else {
 		    			write4(fastQ2, index + 1);
 		    		}
+		    		if(write1_2 == 1) {
+		    			write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index);
+		    		}
 		    	} else if ((i <= 55) && (fastQ2.getFastq()[1].length() > 55)) {
 		    		if (lfp.getflip_head_tag() == 1) {
 		    			write1(fastQ1, arrayOfInt1, index + 2);
@@ -296,6 +408,13 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    			write3(fastQ2, index + 3);
 		    		} else {
 		    			write4(fastQ2, index + 3);
+		    		}
+		    		if(write1_2 == 1) {
+		    			if(len1>55) {
+		    				write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+3);
+		    			}else {
+		    				write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+2);
+		    			}
 		    		}
 		    	} else if ((i > 55) && (fastQ2.getFastq()[1].length() <= 55)) {
 		    		if (lfp.getflip_head_tag() == 1) {
@@ -308,6 +427,13 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    		} else {
 		    			write4(fastQ2, index + 5);
 		    		}
+		    		if(write1_2 == 1) {
+		    			if(len1>55) {
+		    				write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+4);
+		    			}else {
+		    				write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+5);
+		    			}
+		    		}
 		     	} else {
 		     		if (lfp.getflip_head_tag() == 1) {
 		     			write1(fastQ1, arrayOfInt1, index + 6);
@@ -318,6 +444,9 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    			write3(fastQ2, index + 7);
 		    		} else {
 		    			write4(fastQ2, index + 7);
+		    		}
+		    		if(write1_2 == 1) {
+		    			write2_rc(fastQ1, arrayOfInt1[7]+1, fastQ1.getFastq()[1].length(), index+6);
 		    		}
 		     	}
 	    	}
@@ -356,6 +485,9 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    		} else {
 		    			write2(fastQ2, arrayOfInt2, index + 1);
 		    		}
+		    		if(write2_2 == 1) {
+		    			write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+1);
+		    		}
 		    	} else if ((fastQ1.getFastq()[1].length() <= 55) && (j > 55)) {
 		    		if (lfp.getflip_head_tag() == 1) {
 		    			write3(fastQ1, index + 2);
@@ -366,6 +498,13 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    			write1(fastQ2, arrayOfInt2, index + 3);
 		    		} else {
 		    			write2(fastQ2, arrayOfInt2, index + 3);
+		    		}
+		    		if(write2_2 == 1) {
+		    			if(len2>55) {
+		    				write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+3);
+		    			}else {
+		    				write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+2);
+		    			}
 		    		}
 		    	} else if ((fastQ1.getFastq()[1].length() > 55) && (j <= 55)) {
 		    		if (lfp.getflip_head_tag() == 1) {
@@ -378,6 +517,13 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    		} else {
 		    			write2(fastQ2, arrayOfInt2, index + 5);
 		    		}
+		    		if(write2_2 == 1) {
+		    			if(len2>55) {
+		    				write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+4);
+		    			}else {
+		    				write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+5);
+		    			}
+		    		}
 		    	} else {
 		    		if (lfp.getflip_head_tag() == 1) {
 		    			write3(fastQ1, index + 6);
@@ -388,6 +534,9 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		    			write1(fastQ2, arrayOfInt2, index + 7);
 		    		} else {
 		    			write2(fastQ2, arrayOfInt2, index + 7);
+		    		}
+		    		if(write2_2 == 1) {
+		    			write2_rc(fastQ2, arrayOfInt2[7]+1, fastQ2.getFastq()[1].length(), index+7);
 		    		}
 		    	}
 	    	}
@@ -419,14 +568,22 @@ public class LinkerFilteringProcess_Long implements Runnable {
     }
 	
 	// get max local alignment score of seq1 and seq2
-	public int getlocalAlignmaxScore(String seq1, String seq2) throws IOException {
+	public int[] getlocalAlignmaxScore(String seq1, String seq2) throws IOException {
 		
 		LocalAlignment localAligner = new LocalAlignment(seq1.length(), seq2.length());
 		
 	    localAligner.align(seq1, seq2, 0);
 	    int score = localAligner.getMaxScore();
+	    int minJ = localAligner.getMinJ();
+	    int minI = localAligner.getMinI();
+	    int maxJ = localAligner.getMaxJ();
+	    int maxI = localAligner.getMaxI();
+	    //System.out.println(" -----===-=- "+minJ + " " + minI + " " + maxJ + " " +maxI + " " + score);
 	    
-	    return score;
+	    int[] scorearray = new int[2];
+	    scorearray[0] = score;
+	    scorearray[1] = (maxJ-minJ)>=(maxI-minI)?(maxJ-minJ):(maxI-minI);
+	    return scorearray;
 	}
 	
 	public int[] processOneSequence(String seq, int iRead) throws IOException {
@@ -562,6 +719,34 @@ public class LinkerFilteringProcess_Long implements Runnable {
 		}
 	}
 	
+	public void write2(FastQMulthread fastQ, int start, int end, int index) {
+		try {
+			arrayOfBufferedWriter[index].write(fastQ.getFastq()[0]);
+			arrayOfBufferedWriter[index].newLine();
+			arrayOfBufferedWriter[index].write(fastQ.getFastq()[1].substring(start, end));
+			arrayOfBufferedWriter[index].newLine();
+			arrayOfBufferedWriter[index].write(fastQ.getFastq()[2]);
+			arrayOfBufferedWriter[index].newLine();
+			arrayOfBufferedWriter[index].write(fastQ.getFastq()[3].substring(start, end));
+			arrayOfBufferedWriter[index].newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	public void write2_rc(FastQMulthread fastQ, int start, int end, int index) {
+		try {
+			arrayOfBufferedWriter[index].write(fastQ.getFastq()[0]);
+			arrayOfBufferedWriter[index].newLine();
+			arrayOfBufferedWriter[index].write(SeqUtil.revComplement(fastQ.getFastq()[1].substring(start, end)));
+			arrayOfBufferedWriter[index].newLine();
+			arrayOfBufferedWriter[index].write(fastQ.getFastq()[2]);
+			arrayOfBufferedWriter[index].newLine();
+			arrayOfBufferedWriter[index].write(new StringBuffer(fastQ.getFastq()[3].substring(start, end)).reverse().toString());
+			arrayOfBufferedWriter[index].newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	public void write3(FastQMulthread fastQ, int index) {
 		try {
 			arrayOfBufferedWriter[index].write(fastQ.getFastq()[0]);
@@ -591,4 +776,5 @@ public class LinkerFilteringProcess_Long implements Runnable {
 			e.printStackTrace();
 		}
 	}
+	
 }

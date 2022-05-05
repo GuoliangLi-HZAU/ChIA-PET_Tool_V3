@@ -16,7 +16,7 @@ import java.util.Arrays;
 public class UniqueSam {
 	
 
-    public UniqueSam(String Inputfile, String OutputFile) throws IOException {
+    public UniqueSam(String Inputfile, String OutputFile, String runmode) throws IOException {
         BufferedReader FileIn = new BufferedReader(new InputStreamReader(new FileInputStream(Inputfile)));
         new File(OutputFile).delete();
         PrintWriter fileOut = new PrintWriter(new FileOutputStream(new File(OutputFile)));
@@ -27,8 +27,15 @@ public class UniqueSam {
         int XS = 0;
         while ((line = FileIn.readLine()) != null) {
             if (!line.startsWith("@")) {
+            	String[] fields = line.split("\t");
+            	if(runmode.equalsIgnoreCase("HiChIP")) {
+            		//0x100   256  SECONDARY      secondary alignment
+            		if( (Integer.parseInt(fields[1]) & 0x100) != 0) {
+            			continue;
+            		}
+            	}
                 if (lastlines[0] == null) {
-                    String[] fields = line.split("\t");
+                    
                     lastlines[0] = fields[0];
                     lastlines[1] = fields[4];
                     lastlines[4] = line;
@@ -43,7 +50,7 @@ public class UniqueSam {
                         }
                     }
                 } else {
-                    String[] fields = line.split("\t");
+                    //String[] fields = line.split("\t");
                     if (lastlines[0].equalsIgnoreCase(fields[0])) {
                         for (int i = 0; i < fields.length; i++) {
                             if (fields[i].startsWith("AS:i")) {
@@ -55,6 +62,7 @@ public class UniqueSam {
                                 XS = Integer.parseInt(XSs[2]);
                             }
                         }
+                        
                         if (AS - XS > Integer.parseInt(lastlines[2]) - Integer.parseInt(lastlines[3])) {
                             lastlines[2] = String.valueOf(AS);
                             lastlines[3] = String.valueOf(XS);
@@ -97,10 +105,10 @@ public class UniqueSam {
     }
     
     public static void main(String[] args) throws IOException {
-        if (args.length == 2) {
-            new UniqueSam(args[0], args[1]);
+        if (args.length == 3) {
+            new UniqueSam(args[0], args[1], args[2]);
         } else {
-            System.out.println("Usage: java UniqueSam <inputFile> <OutputFile>");
+            System.out.println("Usage: java UniqueSam <inputFile> <OutputFile> <runmode>");
         }
     }
 
