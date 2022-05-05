@@ -48,20 +48,33 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
 
     The options are as follows:
     
-    Necessary options:
+    options:
     --mode: There are two modes for ChIA-PET Tool V3. 0 for short read, 1 for long read.
     --fastq1: path of read1 fastq file.
     --fastq2: path of read2 fastq file.
+    --autolinker: detect linker by our program, then no need provide --linker and --mode paramater.
     --linker: linker file.
+    --fastp: fastp path, strong suggest for ChIA-PET data.
     --minimum_linker_alignment_score: Specifies the allowed minimum alignment score.
     --GENOME_INDEX: specifies the path of BWA index file.
     --GENOME_LENGTH: specifies the number of base pairs in the whole genome.
     --CHROM_SIZE_INFO: specifies the file that contains the length of each chromosome.
     --CYTOBAND_DATA: specifies the ideogram data used to plot intra-chromosomal peaks and interactions.
     --SPECIES: specifies the genome used to plot inter-chromosomal interactions, 1 for human, 2 for mouse and 3 for 
-    others.
     
-    Other options:
+    --hichip: Y(es) or N(o)[default] or O(nly print restriction site file without run other step), need for hichip data
+    --ligation_site: It can be the name of restriction enzyme, such as HindIII, MboI, DpnII, Bglii, Sau3AI, Hinf1, NlaIII, AluI
+        or the site of enzyme digestion, A^AGCTT, ^GATC, ^GATC, A^GATCT, G^ANTC, CATG^, AG^CT or others.
+        multipe restriction enzyme can be seperated by comma, such as G^ANTC,^GATC.
+        restriction site with '^' and contains 'ATCG' without other character!!!
+        if the genomic enzyme digestion file --restrictionsiteFile is provided, 
+        this parameter does not need to be provided. only needed for hichip data;
+    --ResRomove: Y or N, whether remove PET in same restriction contig. default: Y
+    --restrictionsiteFile: restriction site file, can be genarated while has --ligation_site and without this paramater or
+        provide restriction enzyme information with --ligation_site, we will automatically generate the file.
+        only needed for hichip data
+    --genomefile\tgenome fasta file path, needed for with --ligation_site and without --restrictionsiteFile only needed for hichip data
+
     --start_step: start with which step, 1: linker filtering; 2: mapping to genome; 3: removing redundancy; 4: 
     categorization of PETs; 5: peak calling; 6: interaction calling; 7: visualizing, default: 1"
     --output: specifies the directory to store the output data from ChIA-PET Tool V3, 
@@ -93,6 +106,15 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
     --INPUT_ANCHOR_FILE: a file which contains user-specified anchors for interaction calling. If you don't have this 
     file, please specify the value of this variable as "null" instead. Default: null.
     --PVALUE_CUTOFF_INTERACTION: specifies p-value to filter false positive interactions. Default:0.05.
+    --zipbedpe: gzip bedpe related file, after analysis done. default: N. Y for gzip, N for not.
+    --zipsam: Convert sam file to bam, after analysis done. default: N
+    --deletesam: Delete sam files. default: N
+    --keeptemp: Keep temp sam and bedpe file. default: N
+    --map_ambiguous: Also mapping ambiguous reads without linker. default: N
+    --skipmap: Skip mapping read1 and read2, start from paired R1.sam and R2.sam, only valid in HiChIP mode now. default: N
+    --macs2: macs2 path, using macs2 callpeak to detect anchor peak with alignment file. default: N
+    --XOR_cluster: Whether keep loops if only one side of anchor is overlap with peak. default: N
+			
     
 Especially, the directories of data should be set properly to make sure that the programs could run smoothly. ChIA-PET Tool V3 will create a folder named by `OUTPUT_PREFIX` in the `OUTPUT_DIRECTORY`. The default value of `OUTPUT_DIRECTORY` is in the master folder "`ChIA-PET_Tool_V3/`" and `OUTPUT_PREFIX` is "out". Examples of `CHROM_SIZE_INFO` and `CYTOBAND_DATA` are both in the master folder "`ChIA-PET_Tool_V3/chromInfo/`". We recommend users to select one or create a new one in that folder.
 

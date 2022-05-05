@@ -148,9 +148,11 @@ public class Purifying {
             	}else {
             		fragmentsize += (Integer.parseInt(fields[5]) - finalR2[1]);
             	}
+            	/*
             	if(fragmentsize < p.minInsertsize || fragmentsize > p.maxInsertsize) {
             		continue;
             	}
+            	*/
                 newline = line + "\t" + ResSite1 + "\t" + ResSite2 + "\t" + fragmentsize;
                 filterbedpeBufferedWriter.write(newline);
                 filterbedpeBufferedWriter.newLine();

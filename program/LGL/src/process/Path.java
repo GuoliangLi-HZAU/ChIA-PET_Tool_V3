@@ -68,7 +68,7 @@ public class Path {
 	HashMap<String, Integer> chrMAP = new HashMap<>();
 	HashMap<Integer, String> chrMAP_r = new HashMap<>();
 	int minfragsize = 100;
-	int maxfragsize = 100000;
+	int maxfragsize = 1000000;
 	int minInsertsize = 100;
 	int maxInsertsize = 1000;
 	String zipbedpe = "N";
