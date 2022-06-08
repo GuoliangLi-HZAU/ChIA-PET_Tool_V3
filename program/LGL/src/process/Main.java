@@ -318,7 +318,7 @@ public class Main {
 					+ "\n                only needed for hichip data");
 			System.out.println("    --genomefile\tgenome fasta file path, needed for with --ligation_site and without --restrictionsiteFile"
 					+ "\n                only needed for hichip data");
-			System.out.println("    --minfragsize\tMinimum restriction fragment length to consider, default 100");
+			System.out.println("    --minfragsize\tMinimum restriction fragment length to consider, default 20"); //100
 			System.out.println("    --maxfragsize\tMaximum restriction fragment length to consider, default 1000000");
 			System.out.println("    --minInsertsize\tMinimum restriction fragment skip of mapped reads to consider, default 1");
 			//System.out.println("    --maxInsertsize\tMaximum restriction fragment skip of mapped reads to consider, default 1000");
@@ -429,9 +429,9 @@ public class Main {
 		}
 		
 		long time = System.currentTimeMillis() / 1000;
-		System.out.println("[" + rightNow.getTime().toString() +"] Step0: fastq mode " + p.FQMODE);
 		
 		if(!p.fastp.isEmpty() && Integer.valueOf(p.START_STEP) <= 1) {
+			System.out.println("[" + rightNow.getTime().toString() +"] Step0: fastq mode " + p.FQMODE);
 			if(!p.fastp.equals("fastp")) {
 				File file_tmp = new File(p.fastp);
 				if(!file_tmp.exists()) {
@@ -582,7 +582,7 @@ public class Main {
 		            readline = fastqFileIn.readLine();
 		        }
 		        fastqFileIn.close();
-		    }
+		     }
 		    //BufferedWriter localPrintWriter = new BufferedWriter(new FileWriter(p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + ".basic_statistics.txt", false));
 			BufferedWriter localPrintWriter = new BufferedWriter(new FileWriter(p.OUTPUT_DIRECTORY + "/" +p.OUTPUT_PREFIX+"/" + p.OUTPUT_PREFIX + ".basic_statistics.txt", false));
 		    localPrintWriter.write("Total PETs\t" + nPETs_hichip/4);
@@ -624,6 +624,33 @@ public class Main {
 			p.MODE = "0";
 			p.EXTENSION_LENGTH = "1500";
 	    	p.MAPPING_CUTOFF = "20";
+		}
+		
+		
+		if( Integer.valueOf(p.START_STEP) > 1 && Integer.valueOf(p.START_STEP) <=3 && (p.hichipM.equals("Y") || p.hichipM.equals("O") ) ) {
+			p.MERGE_DISTANCE = "-1";
+			System.out.println("[" + rightNow.getTime().toString() +"] HiChIP mode " + p.hichipM);
+			if(p.removeResblock.equals("Y")) {
+				if(p.restrictionsiteFile.equals("None")) {
+					if(!p.ligation_site.equals("-")) {
+						System.out.println("[" + rightNow.getTime().toString() +"] generating restriction file by ligation site!!!");
+						//generate res file by ligation site
+						File Gefile = new File(p.genomefile); 
+						if (!Gefile.exists()) {
+							System.out.println("Warning: Unvalid genome file path!!! "
+									+ p.genomefile);
+							System.exit(0);
+						}
+						p.restrictionsiteFile = p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + "/" + p.OUTPUT_PREFIX +".res.bed";
+					    split_genome_byressite(p.genomefile, p.ligation_sites, p.restrictionsiteFile, p.ligation_site);
+						
+						//System.exit(0);
+					}else {
+						System.out.println("Here is HiChiP mode, please defind --restrictionsiteFile or --ligation_site!!!!");
+						System.exit(0);
+					}
+				}
+			}
 		}
 		
 		//if(p.hichipM.equals("N")) {
@@ -719,33 +746,87 @@ public class Main {
 			//macs2
 			if(!p.macs2.equalsIgnoreCase("N")) {
 				if(!p.INPUT_ANCHOR_FILE.equals("null")) {
-					System.out.println("** Warning **: you simutately provide --INPUT_ANCHOR_FILE and --macs2 Y, we will"
-							+ " run macs2 call peak instead of your provide --INPUT_ANCHOR_FILE file.");
+					System.out.println("[** Warning **]: you simutately provide --INPUT_ANCHOR_FILE " + p.INPUT_ANCHOR_FILE + " and --macs2 " + p.macs2 + ", we will"
+							+ " run anchor mode with your provide --INPUT_ANCHOR_FILE file instead of macs2 call peak mode.");
+				}else {
+					rightNow = Calendar.getInstance();
+					System.out.println("[" + rightNow.getTime().toString() +"] Step5: Calling peak with macs2 ...");
+					String outPrefix = p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + "/" + p.OUTPUT_PREFIX;
+					BufferedWriter macs2F = new BufferedWriter(new FileWriter(outPrefix + 
+							".callpeak.macs2.sh", false));
+					macs2F.write("## macs2 callpeak");
+					macs2F.newLine();
+					//String runcmd = "macs2 callpeak -t " + outPrefix+ "*.pe.sam -f SAM --nomodel --extsize 147 --keep-dup all -q 0.01 -g "+
+					//		p.GENOME_LENGTH + " -n " + p.OUTPUT_PREFIX;// + " --extsize 147"; //.merge.srt.sam
+					String runcmd = "awk -v OFS=\"\\t\" '{if($9==\"+\"){newstrand=\"-\"}else{newstrand=\"+\"}; print $1,$2,$3,\".\\t.\",newstrand}' " + outPrefix + ".bedpe.selected.unique.txt > " + outPrefix + ".allValidPairs.bed";
+					macs2F.write(runcmd);
+					macs2F.newLine();
+					runcmd = "awk -v OFS=\"\\t\" '{if($10==\"+\"){newstrand=\"-\"}else{newstrand=\"+\"}; print $4,$5,$6,\".\\t.\",newstrand}' " + outPrefix + ".bedpe.selected.unique.txt >> " + outPrefix + ".allValidPairs.bed";
+					macs2F.write(runcmd);
+					macs2F.newLine();
+					runcmd = "macs2 callpeak -t " + outPrefix + ".allValidPairs.bed --keep-dup all -g " + 
+					      p.GENOME_LENGTH + " -f BED -n " + outPrefix;// -B  --verbose 1
+					macs2F.write(runcmd);
+					macs2F.newLine();
+	
+					macs2F.close();
+			    	Shell shell = new Shell();
+					shell.runShell(outPrefix + ".callpeak.macs2.sh");
+					//new File(outPrefix + ".callpeak.macs2.sh").delete();
+					p.INPUT_ANCHOR_FILE = outPrefix+ "_peaks.narrowPeak";
 				}
-				rightNow = Calendar.getInstance();
-				System.out.println("[" + rightNow.getTime().toString() +"] Step5: Calling peak with macs2 ...");
-				String outPrefix = p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + "/" + p.OUTPUT_PREFIX;
-				BufferedWriter macs2F = new BufferedWriter(new FileWriter(outPrefix + 
-						".callpeak.macs2.sh", false));
-				String runcmd = "macs2 callpeak -t " + outPrefix+ "*.merge.srt.sam --nomodel --keep-dup all -q 0.01 -g "+
-						p.GENOME_LENGTH + " -n " + outPrefix;// + " --extsize 147";
-				macs2F.write(runcmd);
-				macs2F.newLine();
-				macs2F.close();
-		    	Shell shell = new Shell();
-				shell.runShell(outPrefix + ".callpeak.macs2.sh");
-				new File(outPrefix + ".callpeak.macs2.sh").delete();
-				p.INPUT_ANCHOR_FILE = outPrefix+ "_peaks.narrowPeak";
 			}
 			
-			rightNow = Calendar.getInstance();
-			System.out.println("[" + rightNow.getTime().toString() +"] Step5: Interaction Calling ...");
-			InteractionCalling interactionCalling = new InteractionCalling(p);
-			interactionCalling.run();
+			if(!p.INPUT_ANCHOR_FILE.equals("null")) {
+				String outPrefix = p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + "/" + p.OUTPUT_PREFIX;
+				BufferedWriter anchor2bedpe = new BufferedWriter(new FileWriter(outPrefix + 
+						".anchor2bedpe.sh", false));
+				anchor2bedpe.write("## anchor to bedpe");
+				anchor2bedpe.newLine();
+				
+				String runcmd="bedtools slop -i " + p.INPUT_ANCHOR_FILE + " -g " + p.CHROM_SIZE_INFO + 
+						" -b " + p.EXTENSION_LENGTH + " | bedtools merge -d 256 > " + outPrefix + "_peaks.slopPeak";
+				anchor2bedpe.write(runcmd);
+				anchor2bedpe.newLine();
+				runcmd="awk 'BEGIN{OFS=\"\\t\";i=1}{print $1,$2,$3,\"peak_\"i;i=i+1}' " +  outPrefix  + "_peaks.slopPeak > tmp.bed; mv tmp.bed " + 
+						outPrefix  + "_peaks.slopPeak";
+				anchor2bedpe.write(runcmd);
+				anchor2bedpe.newLine();
+				runcmd="awk '$1!=$4 || $6-$2>=" + p.SELF_LIGATION_CUFOFF + "' " + outPrefix + ".bedpe.selected.unique.txt > " + outPrefix + ".bedpe.selected.unique.validpet.txt";
+				anchor2bedpe.write(runcmd);
+				anchor2bedpe.newLine();
+				//interact
+				runcmd="pairToBed -a " + outPrefix + ".bedpe.selected.unique.validpet.txt -b " + outPrefix + "_peaks.slopPeak -type both > " + outPrefix + ".rmdup.bedpe.tmp";
+				anchor2bedpe.write(runcmd);
+				anchor2bedpe.newLine();
+								
+				anchor2bedpe.close();
+				Shell shell = new Shell();
+				shell.runShell(outPrefix + ".anchor2bedpe.sh");
+				
+				peak2interaction.main(new String[]{outPrefix + ".rmdup.bedpe.tmp", outPrefix + ".cluster.filtered"});
+				p.INPUT_ANCHOR_FILE = outPrefix + "_peaks.slopPeak";
+				p.EXTENSION_LENGTH = "150"; //cause ipet is only keep start
+				p.EXTENSION_MODE = "0"; //0 only extend to downstream.
+				
+				//delete
+				if(p.keeptemp.equals("N")) {
+					new File(outPrefix + ".bedpe.selected.unique.validpet.txt").delete();
+					new File(outPrefix + ".rmdup.bedpe.tmp").delete();
+				}
+			}
 			
+			if(p.INPUT_ANCHOR_FILE.equals("null")) {
+				rightNow = Calendar.getInstance();
+				System.out.println("[" + rightNow.getTime().toString() +"] Step5: Interaction Calling ...");
+				InteractionCalling interactionCalling = new InteractionCalling(p);
+				interactionCalling.run();
+			}
+			
+			System.out.println("[" + rightNow.getTime().toString() +"] Pvalue calculation ...");
 			Pvalues pValues = new Pvalues(p);
-			pValues.calculation();
-			pValues.globalTag();
+			pValues.calculation(); //ipet one-read count in anchor.
+			pValues.globalTag(); 
 			pValues.calculate();
 		}
 		

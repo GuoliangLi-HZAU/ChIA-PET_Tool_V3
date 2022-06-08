@@ -230,33 +230,36 @@ print(report_info_tb, type='html', file=paste(output_dir, "Rplot24.html", sep = 
 ## =================================================================== ##
 ## .mapping_statistics.txt
 ## =================================================================== ##
-if (as.numeric(args[6]) == 1) {
-  files_order <- c("1_2", "2_1")
-  map_order <- c("1_2", "3_4", "5_6", "7_8")
-  for (i in files_order) {
-    map_category <- matrix(rep(0,6),nrow = 2,ncol = 3)
-    temp <- matrix(rep(0,6),nrow = 2,ncol = 3)
-    for (j in map_order) {
-      file_name <- paste(input_prefix,i,j,"mapping_statistics.txt",sep = ".")
-      temp <- read.table(file_name)
-      map_category <- map_category +temp
-    }
-  }
-  write.table(map_category, file= paste(input_prefix,"mapping_statistics.txt",sep = "."), quote=F, sep="\t")
-}
-file_names <- paste(input_prefix, "mapping_statistics.txt", sep = ".")
-data_list <- lapply(file_names, read.table, header = T, row.names = 1, sep = "\t")
-#print(data_list[[1]])
-for (i in 1:1) {
-        colnames(data_list[[i]]) <- rownames(data_list[[i]])
-        for (j in 1:3) {
-          data_list[[i]][[j]] <- format(data_list[[i]][[j]], big.mark = ",")
-        }
-        #data_list[[i]] <- data_list[[i]][c(1, 3, 2), c(1, 3, 2)]
-        #data_list[[i]] <- as.data.frame(sapply(data_list[[i]], function(q){format(q, big.mark = ",")}))
-        print(xtable(data_list[[i]], align = rep("c", 4)), type='html', file=paste(output_dir, "Rplot3_", i, ".html", sep = ""), include.rownames = T, append = T,
-              html.table.attributes = "class = 'mytable'")
-}
+#if (as.numeric(args[6]) == 1) {
+#  files_order <- c("1_2", "2_1")
+#  map_order <- c("1_2", "3_4", "5_6", "7_8")
+#  for (i in files_order) {
+#    map_category <- matrix(rep(0,6),nrow = 2,ncol = 3)
+#    temp <- matrix(rep(0,6),nrow = 2,ncol = 3)
+#    for (j in map_order) {
+#      file_name <- paste(input_prefix,i,j,"mapping_statistics.txt",sep = ".")
+#      temp <- read.table(file_name)
+#      map_category <- map_category +temp
+#    }
+#  }
+#  write.table(map_category, file= paste(input_prefix,"mapping_statistics.txt",sep = "."), quote=F, sep="\t")
+#}
+#file_names <- paste(input_prefix, "mapping_statistics.txt", sep = ".")
+#data_list <- lapply(file_names, read.table, header = T, row.names = 1, sep = "\t")
+##print(data_list[[1]])
+#for (i in 1:1) {
+#        colnames(data_list[[i]]) <- rownames(data_list[[i]])
+#        for (j in 1:3) {
+#          data_list[[i]][[j]] <- format(data_list[[i]][[j]], big.mark = ",")
+#        }
+#        #data_list[[i]] <- data_list[[i]][c(1, 3, 2), c(1, 3, 2)]
+#        #data_list[[i]] <- as.data.frame(sapply(data_list[[i]], function(q){format(q, big.mark = ",")}))
+#        print(xtable(data_list[[i]], align = rep("c", 4)), type='html', file=paste(output_dir, "Rplot3_", i, ".html", sep = ""), include.rownames = T, append = T,
+#              html.table.attributes = "class = 'mytable'")
+#}
+#####can open above
+
+
 # draw mapping statistics of 1_1, 2_2, 1_2, 2_1 on the same page
 # png(paste(output_dir, "Rplot3.png", sep = ""), width = 650, height = 600, res = 80)
 # grid.newpage()

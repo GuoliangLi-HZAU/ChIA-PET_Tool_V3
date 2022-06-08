@@ -41,6 +41,7 @@ public class Path {
 	String SELF_LIGATION_CUFOFF = "8000";
 	String provide_slc = "N";
 	String EXTENSION_LENGTH = "500";
+	String EXTENSION_MODE = "1";
 	String MIN_COVERAGE_FOR_PEAK = "5";
 	String PEAK_MODE = "2";
 	String MIN_DISTANCE_BETWEEN_PEAK = "500";
@@ -67,7 +68,7 @@ public class Path {
 	int Ngenome = 0;
 	HashMap<String, Integer> chrMAP = new HashMap<>();
 	HashMap<Integer, String> chrMAP_r = new HashMap<>();
-	int minfragsize = 100;
+	int minfragsize = 20; //20
 	int maxfragsize = 1000000;
 	int minInsertsize = 1;
 	int maxInsertsize = 1000;

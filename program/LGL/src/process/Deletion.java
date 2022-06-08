@@ -8,6 +8,7 @@ public class Deletion {
 	
 	private Path p;
 	private String outPrefix;
+	private String deletelocal = "N";
 	
 	public Deletion(Path path) {
 		p = path;

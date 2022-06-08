@@ -103,7 +103,7 @@ public class Purifying {
         return finalR;
 	}
 	
-	public void removePETinsameblock(String bedpefile, String filterbedpefile, String sameresbedpefile) throws IOException {
+	public int removePETinsameblock(String bedpefile, String filterbedpefile, String sameresbedpefile) throws IOException {
 		Hashtable<RegionConcise, REGION> hashRegionConcise2Region = new Hashtable<RegionConcise, REGION>();
 	    Hashtable<String, Integer> hashChrom2maxRegionSpans = new Hashtable<String, Integer>();
 	    Hashtable<String, ArrayList<RegionConcise>> hashChrom2regionConcise = new Hashtable<String, ArrayList<RegionConcise>>();;
@@ -124,10 +124,12 @@ public class Purifying {
         int[] finalR1 = new int[3];
         int[] finalR2 = new int[3];
         int fragmentsize = 0, frag1 = 0, frag2 = 0;
+        int bedpecount = 0;
         while ((line = bedpefileP.readLine()) != null) {
             if (line.length() <= 0) {  // skip the short lines
                 continue;
             }
+            bedpecount++;
             String fields[] = line.split("\t");
             finalR1 = getResSite(newchr, fields[0], hashChrom2regionConcise,
             		Integer.parseInt(fields[1]), Integer.parseInt(fields[2]), regions, hashChrom2maxRegionSpans);
@@ -166,15 +168,17 @@ public class Purifying {
         bedpefileP.close();
         filterbedpeBufferedWriter.close();
         sameresbedpeBufferedWriter.close();
+        return bedpecount;
 	}
 	
     public void Purify() throws IOException {// purifying the mapped reads
     	
 		String bedpefile = outPrefix+".bedpe";
+		int petNumber = 0;
 		if(p.hichipM.equals("Y")) {
 			//remove and filter pet in same restriction block
 			if(p.removeResblock.equals("Y")) {
-				removePETinsameblock(outPrefix+".bedpe", outPrefix+".bedpe.filter.byres", outPrefix+".bedpe.insameres");
+				petNumber = removePETinsameblock(outPrefix+".bedpe", outPrefix+".bedpe.filter.byres", outPrefix+".bedpe.insameres");
 				bedpefile = outPrefix+".bedpe.filter.byres";
 			}
 		}
@@ -315,7 +319,8 @@ public class Purifying {
     			    //System.out.println("\nI think here is normal case!!!!\n");
     			    
     			    //using system sort
-    			    String runsortcmd="sort -k1,1 -k4,4 -k3,3r -k6,6r -k2,2n -k5,5n "+tmpPrefix+".purify.temp.txt > " + tmpPrefix+".bedpe.selected.unique.pet.txt";
+    			    //String runsortcmd="sort -k1,1 -k4,4 -k3,3r -k6,6r -k2,2n -k5,5n "+tmpPrefix+".purify.temp.txt > " + tmpPrefix+".bedpe.selected.unique.pet.txt";
+    			    String runsortcmd="sh " + p.PROGRAM_DIRECTORY + "/psort.sh " + tmpPrefix+".purify.temp.txt " + tmpPrefix+".bedpe.selected.unique.pet.txt > /dev/null 2>&1";
     			    purifysort.write(runsortcmd);
     			    purifysort.newLine();
     				//sortK(tmpPrefix+".purify.temp.txt", tmpPrefix+".bedpe.selected.unique.pet.txt", new int[]{1, 4, 3, 6, 2});
@@ -337,7 +342,8 @@ public class Purifying {
     				new File(tmpPrefix+".purify.temp.txt").delete();
     				new File(tmpPrefix+".bedpe.selected.unique.pet.txt").delete();
     			}
-    			new File(outPrefix+".purify.sort.sh").delete();
+    			
+    			//new File(outPrefix+".purify.sort.sh").delete();
     			
     			
     			//delete temp chrom bedpe file
@@ -369,7 +375,8 @@ public class Purifying {
 			    	lf.writeFile(outPrefix+".bedpe.selected.unique.intra-chrom.strand.dist.txt", value + " " + strand, true);
 			    }
 			    if(p.hichipM.equals("Y") || p.hichipM.equals("O")) {
-			    	lf.writeFile(outPrefix+".basic_statistics.txt", "Uniquely Mapped PETs\t"+selectNum, true);
+			    	lf.writeFile(outPrefix+".basic_statistics.txt", "Uniquely Mapped PETs\t"+petNumber, true);
+			    	lf.writeFile(outPrefix+".basic_statistics.txt", "Uniquely PETs after remove same res fragment\t"+selectNum, true);
 			    	lf.writeFile(outPrefix+".basic_statistics.txt", "Merging same PETs\t"+uniqueNum, true);
 			    }else {
 			    	lf.writeFile(outPrefix+".basic_statistics.txt", "Uniquely Mapped same-linker PETs\t"+selectNum, true);

@@ -96,7 +96,7 @@ public class TagCountInGivenRegions {
         if (this.extensionMode == 2) { // extension in both directions
             start = loci - this.extensionLength;
             end = loci + this.extensionLength;
-        } else {  // extension from 3' to 5'
+        } else if (this.extensionMode == 1) {  // extension from 3' to 5'
         	if (SeqUtil.isForwardStrand(strand) == true) {
                 start = loci - this.extensionLength;
                 end = loci;
@@ -104,6 +104,9 @@ public class TagCountInGivenRegions {
                 start = loci;
                 end = loci + this.extensionLength;
             }
+        } else if (this.extensionMode == 0) {  // extension
+                start = loci;
+                end = loci + this.extensionLength;
         }
         
 //        else { // extension from 5' to 3'

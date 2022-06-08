@@ -1,10 +1,12 @@
 package process;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -42,14 +44,15 @@ public class Pvalues {
 		    			if (p.MODE.equals("0")) {
 		    				System.out.println("Short reads mode process clusters filter!!!!\n");
 		    				TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered."+fileName[i], outPrefix+
-		    						".cluster.filtered."+fileName[i]+".tagCount.txt", "500", "1"});
+		    						".cluster.filtered."+fileName[i]+".tagCount.txt", p.EXTENSION_LENGTH, p.EXTENSION_MODE}); //"500"
 		    			} else {
 		    				System.out.println("Long reads mode process clusters filter!!!!\n");
 		    				//TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered."+fileName[i], outPrefix+
 		    				//		".cluster.filtered."+fileName[i]+".tagCount.txt", "501", "1"});
 		    				TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered."+fileName[i], outPrefix+
-				    				".cluster.filtered."+fileName[i]+".tagCount.txt", "500", "1"});
+				    				".cluster.filtered."+fileName[i]+".tagCount.txt", p.EXTENSION_LENGTH, p.EXTENSION_MODE}); //"500"
 		    			}
+		    			
 		    		} else {
 		    			System.out.println("Error: "+file2+" doesn't exist");
 					}
@@ -75,17 +78,25 @@ public class Pvalues {
 		    	String line = reader.readLine();
 		    	new File(outPrefix+".aln1").delete();
 		    	new File(outPrefix+".aln2").delete();
+		    	BufferedWriter outaln1 = new BufferedWriter(new FileWriter(outPrefix+".aln1", false));
+		    	BufferedWriter outaln2 = new BufferedWriter(new FileWriter(outPrefix+".aln2", false));
 			    while (line != null) {
 			    	line = line.trim();
 			    	String[] strs = line.split("[ \t]+");
 			    	if (strs.length >= 6) {
 			    		String str = strs[0]+"\t"+strs[1]+"\t"+strs[2];
-			    		lf.writeFile(outPrefix+".aln1", str, true);
+			    		//lf.writeFile(outPrefix+".aln1", str, true);
+			    		outaln1.write(str);
+			    		outaln1.newLine();
 			    		str = strs[3]+"\t"+strs[4]+"\t"+strs[5];
-			    		lf.writeFile(outPrefix+".aln2", str, true);
+			    		//lf.writeFile(outPrefix+".aln2", str, true);
+			    		outaln2.write(str);
+			    		outaln2.newLine();
 			    	}
 			    	line = reader.readLine();
 			    }
+			    outaln1.close();
+			    outaln2.close();
 			    mergeFiles(new String[]{outPrefix+".aln1", outPrefix+".aln2"}, outPrefix+".aln");
 			    new File(outPrefix+".aln1").delete();
 			    new File(outPrefix+".aln2").delete();
@@ -145,18 +156,28 @@ public class Pvalues {
 		    	String line = reader.readLine();
 		    	new File(outPrefix+".cluster.filtered.anchor1").delete();
 		    	new File(outPrefix+".cluster.filtered.anchor2").delete();
+		    	BufferedWriter outanchor1 = new BufferedWriter(new FileWriter(outPrefix+".cluster.filtered.anchor1", false));
+		    	BufferedWriter outanchor2 = new BufferedWriter(new FileWriter(outPrefix+".cluster.filtered.anchor2", false));
 			    while (line != null) {
 			    	line = line.trim();
 			    	String[] strs = line.split("[ \t]+");
 			    	if (strs.length >= 13) {
 			    		String str = strs[0]+"\t"+strs[1]+"\t"+strs[2]+"\t"+strs[12];
-			    		lf.writeFile(outPrefix+".cluster.filtered.anchor1", str, true);
+			    		//lf.writeFile(outPrefix+".cluster.filtered.anchor1", str, true);
+			    		outanchor1.write(str);
+			    		outanchor1.newLine();
 			    		str = strs[6]+"\t"+strs[7]+"\t"+strs[8]+"\t"+strs[12];;
-			    		lf.writeFile(outPrefix+".cluster.filtered.anchor2", str, true);
+			    		//lf.writeFile(outPrefix+".cluster.filtered.anchor2", str, true);
+			    		outanchor2.write(str);
+			    		outanchor2.newLine();
+			    	}else {
+			    		System.out.println("Unexpected cluster: " + line);
 			    	}
 			    	line = reader.readLine();
 			    }
 			    reader.close();
+			    outanchor1.close();
+			    outanchor2.close();
 		    } catch (IOException e) {
 			    e.printStackTrace();  
 			}
@@ -171,7 +192,8 @@ public class Pvalues {
 	}
 	
     public void calculate() {// calculate p-value
-    	p.checkPath(outPrefix+".cluster");
+    	//p.checkPath(outPrefix+".cluster"); ??? why qw
+    	
     	String file1 = outPrefix+".cluster.filtered.anchor1.tagCount.txt";
     	String file2 = outPrefix+".cluster.filtered.anchor2.tagCount.txt";
     	pasteTagCount(file1, file2);
@@ -408,6 +430,18 @@ public class Pvalues {
 		    		        strs[18]+"\t"+strs[19]+"\t"+strs[20]+"\t"+strs[21]+"\t"+strs[22]+"\t"+strs[23];
 		    		        	lf.writeFile(outPrefix+".cluster.withpvalue.txt", line1, true);
 		    		        	if (Double.valueOf(strs[21]) < Double.valueOf(p.PVALUE_CUTOFF_INTERACTION)) {
+		    		        		lf.writeFile(outPrefix+".cluster.FDRfiltered.txt", line1, true);
+		    		        	}
+		    		        }else if (strs.length == 20) {
+		    		        	int samechrom = 0; int distance = Integer.MAX_VALUE;
+		    		        	if(strs[0].equals(strs[6])) {
+		    		        		samechrom = 1;
+		    		        		distance = Math.abs(Integer.parseInt(strs[8])-Integer.parseInt(strs[1]));
+		    		        	}
+		    		        	line1 = strs[0]+"\t"+strs[1]+"\t"+strs[2]+"\t"+strs[6]+"\t"+strs[7]+"\t"+strs[8]+"\t"+strs[12]+"\t"+samechrom+"\t"+distance+"\t"+
+		    		        strs[14]+"\t"+strs[15]+"\t"+strs[16]+"\t"+strs[17]+"\t"+strs[18]+"\t"+strs[19];
+		    		        	lf.writeFile(outPrefix+".cluster.withpvalue.txt", line1, true);
+		    		        	if (Double.valueOf(strs[17]) < Double.valueOf(p.PVALUE_CUTOFF_INTERACTION)) {
 		    		        		lf.writeFile(outPrefix+".cluster.FDRfiltered.txt", line1, true);
 		    		        	}
 		    		        }

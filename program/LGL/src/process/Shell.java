@@ -12,6 +12,7 @@ public class Shell {
         if (f.exists()) {
 	        try {
 				String command = "sh " + path;// notice the blank behind sh
+				System.out.println("[CPT V3 run] " + command);
 				Process process = Runtime.getRuntime().exec(command);
 				BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));
 				BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));

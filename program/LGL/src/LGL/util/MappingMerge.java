@@ -1,9 +1,11 @@
 package LGL.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -21,6 +23,13 @@ public class MappingMerge {
         PrintWriter fileOut = new PrintWriter(new FileOutputStream(new File(OutputFile+".pe.sam")));
         new File(OutputFile+".bedpe").delete();
         PrintWriter bedpeoutf = new PrintWriter(new FileOutputStream(new File(OutputFile+".bedpe")));
+        BufferedWriter  outStatistics = new BufferedWriter(new FileWriter(OutputFile + ".mapping_statistics.txt"));
+        int[][] statistics = new int[3][3];
+        Arrays.fill(statistics[0], 0);
+        Arrays.fill(statistics[1], 0);
+        Arrays.fill(statistics[2], 0);
+        //int lastmapped = 0; // 0 *, 1 unique, 2 multi
+        
         String line;
         //String[] lastlines = new String[5];
         //0 ID;
@@ -175,6 +184,23 @@ public class MappingMerge {
         	}
         }
         lastlines.clear();
+        
+        outStatistics.write("\tNon-mappable\tUniquely-mapped\tOthers");
+        outStatistics.newLine();
+        String[] label = new String[3];
+        label[0] = "Non-mappable";
+        label[1] = "Uniquely-mapped";
+        label[2] = "Others";
+        for (int i = 0; i < 3; i++) {
+            outStatistics.write(label[i] + "\t");
+            for (int j = 0; j < 2; j++) {
+                outStatistics.write(statistics[i][j] + "\t");
+            }
+            outStatistics.write(statistics[i][2] + "");
+            outStatistics.newLine();
+        }
+        outStatistics.close();
+        
         //end process last read
         FileIn.close();
         fileOut.close();
