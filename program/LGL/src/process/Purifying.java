@@ -401,6 +401,7 @@ public class Purifying {
 	public void sortK(String source, String dest, int []l) {
 		File f = new File(source);
     	if (f.exists()) {
+    		System.out.println("[CPT3] "+source+" sorting");
 	        try {
 	        	BufferedReader reader = new BufferedReader(new FileReader(f));
 	        	String line = reader.readLine();

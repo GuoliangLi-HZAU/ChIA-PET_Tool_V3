@@ -86,17 +86,29 @@ public class Mapping {
         	String[] fastq2s = p.Fastq_file_2.split(",");
         	for(int i=0;i<fastq1s.length;i++) {
         		if(!p.skipmap.equalsIgnoreCase("Y")) {
-	    	    	line = "bwa mem -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+fastq1s[i]+" 1>"+outPrefix+"."+i+ ".R1.sam 2>"+outPrefix+"."+i+
-	    	    			".R1.sam.output.info.txt"; //-5M 
-	    	    	lf.writeFile(file, line, true);
-	    	    	line = "bwa mem -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+fastq2s[i]+" 1>"+outPrefix+"."+i+".R2.sam 2>"+outPrefix+"."+i+
-	    	    			".R2.sam.output.info.txt";
-	    	    	lf.writeFile(file, line, true);
+        			if(p.bamout.equalsIgnoreCase("Y")) {
+        				line = "bwa mem -M -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+fastq1s[i]+" | samtools view -hbS -o "+outPrefix+"."+i+ ".R1.bam - "; //-5M 
+		    	    	lf.writeFile(file, line, true);
+		    	    	line = "bwa mem -M -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+fastq2s[i]+" | samtools view -hbS -o "+outPrefix+"."+i+".R2.bam - ";
+		    	    	lf.writeFile(file, line, true);
+        			}else {
+		    	    	line = "bwa mem -M -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+fastq1s[i]+" 1>"+outPrefix+"."+i+ ".R1.sam 2>"+outPrefix+"."+i+
+		    	    			".R1.sam.output.info.txt"; //-5M 
+		    	    	lf.writeFile(file, line, true);
+		    	    	line = "bwa mem -M -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+fastq2s[i]+" 1>"+outPrefix+"."+i+".R2.sam 2>"+outPrefix+"."+i+
+		    	    			".R2.sam.output.info.txt";
+		    	    	lf.writeFile(file, line, true);
+        			}
         		}
     	    	
     	    	//merge sam
-    	    	line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" -o "+outPrefix+"."+i+".merge.bam " + outPrefix+"."+i+".R1.sam " + outPrefix+"."+i+".R2.sam";
-    	    	lf.writeFile(file, line, true);
+        		if(p.bamout.equalsIgnoreCase("Y")) {
+        			line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" "+outPrefix+"."+i+".merge.bam " + outPrefix+"."+i+".R1.bam " + outPrefix+"."+i+".R2.bam";
+        			lf.writeFile(file, line, true);
+        		}else {
+        			line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" "+outPrefix+"."+i+".merge.bam " + outPrefix+"."+i+".R1.sam " + outPrefix+"."+i+".R2.sam";
+        	    	lf.writeFile(file, line, true);
+        		}
     	    	//sort by name
     	    	line = "samtools sort -O SAM -n -@ "+p.NTHREADS+" -o "+outPrefix+"."+i+".merge.srt.sam " + outPrefix+"."+i+".merge.bam ";
     	    	lf.writeFile(file, line, true);
@@ -146,17 +158,29 @@ public class Mapping {
         
     	}else {
     		if(!p.skipmap.equalsIgnoreCase("Y")) {
-		    	line = "bwa mem -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+p.Fastq_file_1+" 1>"+outPrefix+".R1.sam 2>"+outPrefix+
-		    			".R1.sam.output.info.txt";
-		    	lf.writeFile(file, line, true);
-		    	line = "bwa mem -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+p.Fastq_file_2+" 1>"+outPrefix+".R2.sam 2>"+outPrefix+
-		    			".R2.sam.output.info.txt";
-		    	lf.writeFile(file, line, true);
+    			if(p.bamout.equalsIgnoreCase("Y")) {
+    				line = "bwa mem -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+p.Fastq_file_1+" | samtools view -hbS -o "+outPrefix+".R1.sam - ";
+			    	lf.writeFile(file, line, true);
+			    	line = "bwa mem -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+p.Fastq_file_2+" | samtools view -hbS -o "+outPrefix+".R2.sam - ";
+			    	lf.writeFile(file, line, true);
+    			}else {
+			    	line = "bwa mem -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+p.Fastq_file_1+" 1>"+outPrefix+".R1.sam 2>"+outPrefix+
+			    			".R1.sam.output.info.txt";
+			    	lf.writeFile(file, line, true);
+			    	line = "bwa mem -t "+p.NTHREADS+" "+p.GENOME_INDEX+" "+p.Fastq_file_2+" 1>"+outPrefix+".R2.sam 2>"+outPrefix+
+			    			".R2.sam.output.info.txt";
+			    	lf.writeFile(file, line, true);
+    			}
     		}
 
 	    	//merge sam
-	    	line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" -o "+outPrefix+".merge.bam " + outPrefix+".R1.sam " + outPrefix+".R2.sam";
-	    	lf.writeFile(file, line, true);
+    		if(p.bamout.equalsIgnoreCase("Y")) {
+    			line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" "+outPrefix+".merge.bam " + outPrefix+".R1.bam " + outPrefix+".R2.bam";
+    	    	lf.writeFile(file, line, true);
+    		}else {
+		    	line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" "+outPrefix+".merge.bam " + outPrefix+".R1.sam " + outPrefix+".R2.sam";
+		    	lf.writeFile(file, line, true);
+    		}
 	    	//sort by name
 	    	line = "samtools sort -O SAM -n -@ "+p.NTHREADS+" -o "+outPrefix+".merge.srt.sam " + outPrefix+".merge.bam ";
 	    	lf.writeFile(file, line, true);
@@ -279,7 +303,7 @@ public class Mapping {
     	}
     	*/
     	//merge sam
-    	line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" -o "+outPrefix+".${x}.merge.bam " + outPrefix+".${x}.R1.sam " + outPrefix+".${x}.R2.sam " +
+    	line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" "+outPrefix+".${x}.merge.bam " + outPrefix+".${x}.R1.sam " + outPrefix+".${x}.R2.sam " +
     			outPrefix+".${x}.R3.sam " + outPrefix+".${x}.R4.sam " + outPrefix+".${x}.R5.sam " + outPrefix+".${x}.R6.sam " + 
     			outPrefix+".${x}.R7.sam " + outPrefix+".${x}.R8.sam";
     	lf.writeFile(file, line, true);
@@ -304,7 +328,7 @@ public class Mapping {
 	    			".ambiguous.R2.sam.output.info.txt";
 	    	lf.writeFile(file, line, true);
 	    	//merge sam
-	    	line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" -o "+outPrefix+".ambiguous.merge.bam " + outPrefix+".ambiguous.R1.sam " + outPrefix+".ambiguous.R2.sam ";
+	    	line = "samtools merge -f -O BAM -@ "+p.NTHREADS+" "+outPrefix+".ambiguous.merge.bam " + outPrefix+".ambiguous.R1.sam " + outPrefix+".ambiguous.R2.sam ";
 	    	lf.writeFile(file, line, true);
 	    	//sort by name
 	    	line = "samtools sort -O SAM -n -@ "+p.NTHREADS+" -o "+outPrefix+".ambiguous.merge.srt.sam " + outPrefix+".ambiguous.merge.bam ";

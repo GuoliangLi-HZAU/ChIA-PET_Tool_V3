@@ -7,8 +7,10 @@ import process.LinkerFiltering;
 import process.Path;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -69,11 +71,24 @@ public class Pet2Cluster1 {
 	        }
 	        fileIn.close();
 	        
+	        BufferedWriter purifysort = new BufferedWriter(new FileWriter(outPrefix +
+                    ".pcluster.sort.sh", false));
+	        String runsortcmd= "";
 	        for (int i = 0; i < tmpPrefixList.size(); i++) {
 	        	String tmpPrefix = tmpPrefixList.get(i);
-	        	purifying.sortK(tmpPrefix+".pre_cluster.txt", tmpPrefix+".sort.pre_cluster.txt", new int[]{1, 4, 2});
-	        	new File(tmpPrefix+".pre_cluster.txt").delete();
+	        	runsortcmd="sh " + p.PROGRAM_DIRECTORY + "/psort-cluster.sh " + tmpPrefix+".pre_cluster.txt " + tmpPrefix+".sort.pre_cluster.txt > /dev/null 2>&1";
+	        	purifysort.write(runsortcmd);
+                purifysort.newLine();
+                runsortcmd="rm " + tmpPrefix+".pre_cluster.txt";
+                purifysort.write(runsortcmd);
+                purifysort.newLine();
+	        	//purifying.sortK(tmpPrefix+".pre_cluster.txt", tmpPrefix+".sort.pre_cluster.txt", new int[]{1, 4, 2});
+	        	//new File(tmpPrefix+".pre_cluster.txt").delete();
 	        }
+	        purifysort.close();
+	        Shell shell = new Shell();
+            shell.runShell(outPrefix + ".pcluster.sort.sh");
+	        
 	        purifying.mergeFiles(tmpPrefixList, ".sort.pre_cluster.txt", outPrefix+".pre_cluster.sorted");
 		} catch (IOException e) {
 		    e.printStackTrace();

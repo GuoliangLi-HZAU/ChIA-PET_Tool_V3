@@ -439,14 +439,21 @@ public class kmer {
 	    		linkersw_single.add(i);
 	    	}
 	    }
-	    //System.out.println("Size LL " + mylinkers1.size());
+	    //System.out.println("Size LL " + mylinkers1.size() + " "+ linkersw.size() + " " + linkersw_single.size());
 
 	    if(linkersw.size()==1) {// match in linker lib
 	        int linkeridx = linkersw.get(0);
 	        Newlinkerfile.write(alllinkers.get(linkeridx).printlinkerseq());//System.out.println("Size LL " + mylinkers1.size());
 
 	        Newlinkerfile.newLine();
-        }else if(linkersw_single.size()>=1) { // part linker in lib
+        }else if(linkersw_single.size()==2) {
+        	if((linkersw_single.get(0) == 3 || linkersw_single.get(1) == 3) && (linkersw_single.get(0) == 6 || linkersw_single.get(1) == 6)) {
+        		int linkeridx = 6;
+    	        Newlinkerfile.write(alllinkers.get(linkeridx).printlinkerseq());//System.out.println("Size LL " + mylinkers1.size());
+    	        Newlinkerfile.newLine();
+        	}
+        }
+	    else if(linkersw_single.size()>=1) { // part linker in lib
         	if(linkersw_single.size()==1) {
 	        	int linkeridx = linkersw_single.get(0);
 	        	Newlinkerfile.write(alllinkers.get(linkeridx).printlinkerseq_half());

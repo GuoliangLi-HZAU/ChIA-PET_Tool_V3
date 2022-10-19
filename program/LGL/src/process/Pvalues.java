@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
@@ -33,26 +34,25 @@ public class Pvalues {
 		p.checkPath(outPrefix+".cluster.filtered");
 		
 		cutIPet(outPrefix+".ipet");
-		cutCluster(outPrefix+".cluster.filtered");
+		//changed by momo, not using this
+		//cutCluster(outPrefix+".cluster.filtered");
+		
 		String fileName[] = {"anchor1", "anchor2"};
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 1; i++) { //2
 		    try {
 		    	File file1 = new File(outPrefix+".aln");
-		    	File file2 = new File(outPrefix+".cluster.filtered."+fileName[i]);
+		    	File file2 = new File(outPrefix+".cluster.filtered"); //. +fileName[i]
 		    	if (file1.exists()) {
 		    		if (file2.exists()) {
 		    			if (p.MODE.equals("0")) {
 		    				System.out.println("Short reads mode process clusters filter!!!!\n");
-		    				TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered."+fileName[i], outPrefix+
-		    						".cluster.filtered."+fileName[i]+".tagCount.txt", p.EXTENSION_LENGTH, p.EXTENSION_MODE}); //"500"
 		    			} else {
 		    				System.out.println("Long reads mode process clusters filter!!!!\n");
-		    				//TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered."+fileName[i], outPrefix+
-		    				//		".cluster.filtered."+fileName[i]+".tagCount.txt", "501", "1"});
-		    				TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered."+fileName[i], outPrefix+
-				    				".cluster.filtered."+fileName[i]+".tagCount.txt", p.EXTENSION_LENGTH, p.EXTENSION_MODE}); //"500"
 		    			}
-		    			
+		    			if(i==0) {
+		    				TagCountInGivenRegions.main(new String[]{outPrefix+".aln", outPrefix+".cluster.filtered", outPrefix+
+			    				".cluster.filtered.", p.EXTENSION_LENGTH, p.EXTENSION_MODE}); //+fileName[i]  +fileName[i]+".tagCount.txt"
+		    			}
 		    		} else {
 		    			System.out.println("Error: "+file2+" doesn't exist");
 					}
@@ -97,6 +97,7 @@ public class Pvalues {
 			    }
 			    outaln1.close();
 			    outaln2.close();
+			    new File(outPrefix+".aln").delete();
 			    mergeFiles(new String[]{outPrefix+".aln1", outPrefix+".aln2"}, outPrefix+".aln");
 			    new File(outPrefix+".aln1").delete();
 			    new File(outPrefix+".aln2").delete();
@@ -345,14 +346,16 @@ public class Pvalues {
 	    	    	BufferedReader reader2 = new BufferedReader(new FileReader(f2));
 	    	    	String line1 = reader1.readLine();
 	    	    	String line2 = reader2.readLine();
-	    	    	new File(outPrefix+".petCount.tagCount.txt").delete();
+	    	    	//new File(outPrefix+".petCount.tagCount.txt").delete();
+	    	    	PrintWriter fileOut = new PrintWriter(new BufferedWriter(new FileWriter(outPrefix+".petCount.tagCount.txt", false)));
 	    	    	while (line1 != null && line2 != null) {
 	    	    		line1 = line1 + "\t" + line2;
 	    	    		line1 = line1.trim();
 	    		        String[] strs = line1.split("[ \t]+");
 	    		        if (strs.length >= 10) {
 	    		        	line1 =  strs[3]+"\t"+strs[4]+"\t"+strs[9];
-	    		        	lf.writeFile(outPrefix+".petCount.tagCount.txt", line1, true);
+	    		        	//lf.writeFile(outPrefix+".petCount.tagCount.txt", line1, true);
+	    		        	fileOut.println(line1);
 	    		        }
 	    	    		line1 = reader1.readLine();
 	    	    		line2 = reader2.readLine();
@@ -360,6 +363,7 @@ public class Pvalues {
 	    	    	//assume two files have same number of line
 	    	    	reader1.close();
 	    	    	reader2.close();
+	    	    	fileOut.close();
     			} catch (IOException e) {
     			    e.printStackTrace();  
     			}

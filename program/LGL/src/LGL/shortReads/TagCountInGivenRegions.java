@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -48,14 +49,51 @@ public class TagCountInGivenRegions {
         this.extensionLength = extensionLength;
         this.extensionMode = extensionMode;
         // load regions
-        regions = REGION.load(regionFile);
+        //regions = REGION.load(regionFile);
+        //delete same in vector by momo
+        regions = REGION.load(outputFile+"validunique.anchor");
+        
         // convert regions to regionConcise
         // and the hashmap to the regions
         generateRegionConciseHash(regions, hashChrom2regionConcise, hashChrom2maxRegionSpans, hashRegionConcise2Region);
         // generate the tag counts for each region: the number of tags in the regions
         generateTagCount(tagFile);
         // output the region clusters
-        outputRegionTagCount(outputFile);
+        outputRegionTagCount(regionFile, outputFile);
+    }
+    
+    void outputRegionTagCount(String inFile, String outputFile) throws IOException {
+                
+        BufferedReader fileIn = new BufferedReader(new InputStreamReader(new FileInputStream(new File(inFile))));
+        PrintWriter fileOut1 = new PrintWriter(new BufferedWriter(new FileWriter(outputFile+"anchor1.tagCount.txt", false)));
+        PrintWriter fileOut2 = new PrintWriter(new BufferedWriter(new FileWriter(outputFile+"anchor2.tagCount.txt", false)));
+        
+        System.out.println("SIZE of hashRegion2tagCount " + hashRegion2tagCount.size());
+        
+        String line;
+        while ((line = fileIn.readLine()) != null) {
+            if (line.length() <= 0) {  // skip the short lines
+                continue;
+            }
+            String fields[] = line.split("\t");
+            REGION region = new REGION(fields[0], Integer.parseInt(fields[1]), Integer.parseInt(fields[2]));
+            if (fields.length >= 13) {
+                region.setAnnotation(fields[12]);
+            }
+            fileOut1.println(region.toString() + "\t" + region.getAnnotation() + "\t" + hashRegion2tagCount.get(region).intValue());
+            
+            region = new REGION(fields[6], Integer.parseInt(fields[7]), Integer.parseInt(fields[8]));
+            if (fields.length >= 13) {
+                region.setAnnotation(fields[12]);
+            }
+            fileOut2.println(region.toString() + "\t" + region.getAnnotation() + "\t" + hashRegion2tagCount.get(region).intValue());
+            
+            
+        }
+        fileIn.close();
+
+        fileOut1.close();
+        fileOut2.close();
     }
 
     void outputRegionTagCount(String outputFile) throws IOException {
@@ -77,12 +115,17 @@ public class TagCountInGivenRegions {
 
         BufferedReader fileIn = new BufferedReader(new InputStreamReader(new FileInputStream(new File(tagFile))));
         String line;
+        long processN = 0;
         while ((line = fileIn.readLine()) != null) {
             if (line.length() <= 0) {  // skip the short lines
                 continue;
             }
             String fields[] = line.split("\t");
             updateTagCount(fields[0], Integer.parseInt(fields[1]), fields[2].charAt(0));
+            processN++;
+            if(processN%10000000 == 0) {
+            	System.out.println("Porcessed " + processN/10000000 + "0 M tags...");
+            }
         }
         fileIn.close();
     }

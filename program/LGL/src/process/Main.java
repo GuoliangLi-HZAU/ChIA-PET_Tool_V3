@@ -299,10 +299,12 @@ public class Main {
 			System.out.println("Necessary options:");
 			System.out.println("    --fastq1\tpath of read1 fastq file");
 			System.out.println("    --fastq2\tpath of read2 fastq file");
-			System.out.println("    --autolinker\tdetect linker by our program, then no need provide --linker and --mode paramater.");
+			System.out.println("    --autolinker\tdetect linker by our program, true [default] or false, then no need provide --linker and --mode paramater.");
 			System.out.println("    --mode\tmode of tool, 0: short read; 1: long read, need for ChIA-PET data");
 			System.out.println("    --linker\tpath of linker file, need for ChIA-PET mode");
 			System.out.println("    --fastp\tfastp path, strong suggest for ChIA-PET data.");
+			System.out.println("    --skipheader\tskip header N reads for detect linker, default 1000000.");
+			System.out.println("    --linkerreads\tN reads used for detect linker, default 100000.");
 			
 			System.out.println("    --hichip\tY(es) or N(o)[default] or O(nly print restriction site file without run other step), need for hichip data");
 			System.out.println("    --ligation_site\tIt can be the name of restriction enzyme, such as HindIII, MboI, DpnII, Bglii, Sau3AI, Hinf1, NlaIII, AluI "
@@ -354,7 +356,7 @@ public class Main {
 			System.out.println("    --MERGE_DISTANCE\tthe distance limit to merge the PETs with similar mapping locations, default: 2");
 			System.out.println("    --SELF_LIGATION_CUFOFF\tthe distance threshold between self-ligation PETs and intra- chromosomal inter-ligation PETs, "
 					+ "default: 8000 for ChIA, and 1000 for HiChIP");
-			System.out.println("    --EXTENSION_LENGTH\tthe extension length from the location of each tag, default: 500");
+			System.out.println("    --EXTENSION_LENGTH\tthe extension length from the location of each tag, default: 500, 1500 suggest for single-end mode");
 			System.out.println("    --MIN_COVERAGE_FOR_PEAK\tthe minimum coverage to define peak regions, default: 5");
 			System.out.println("    --PEAK_MODE\t1: peak region mode, which takes all the overlapping PET regions above the coverage threshold as peak "
 					+ "regions; 2: peak summit mode, which takes the highest coverage of overlapping regions as peak regions, default: 2");
@@ -370,7 +372,11 @@ public class Main {
 			System.out.println("    --map_ambiguous\tAlso mapping ambiguous reads without linker. default: N");
 			System.out.println("    --skipmap\tSkip mapping read1 and read2, start from paired R1.sam and R2.sam, only valid in HiChIP mode now. default: N");
 			System.out.println("    --macs2\tmacs2 path, using macs2 callpeak to detect anchor peak with alignment file. default: N");
+			System.out.println("    --nomodel\tmacs2 parameter, Whether or not to build the shifting model in macs2. default: N");
+			System.out.println("    --shortestP\textend and keep shorest peak length longer than N for loop calling, suggest 1500, user can set 0 to skip this step. default: 1500");
+			System.out.println("    --shortestA\textend and keep shorest anchor length longer than N for loop calling, user can set 0 to skip this step. default: 0");
 			System.out.println("    --XOR_cluster\tWhether keep loops if only one side of anchor is overlap with peak. default: N");
+			System.out.println("    --addcluster\tKeep all regions with more than 2 count reads as potential anchor for calling loop. default: N. if peaks number of macs2 smaller than 10000, this paramater will work automaticly.");
 			System.exit(0);
 		}
 		
@@ -452,13 +458,13 @@ public class Main {
 				String outPrefix = p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX;
 				if(p.FQMODE.equals("single-end")) {
 					String mycmd = "java -cp "+p.PROGRAM_DIRECTORY+"/ChIA-PET.jar LGL.util.kmer "+
-							" --fq1 " + p.Fastq_file_1 +" -k " + p.kmerlen + " -N 100000 -s 0 -e 0 --score 12 " +
-							"--prefix " + outPrefix + ".k" + p.kmerlen + " --minlinker 13 "+ " --skip 1000000 -p 0.05";
+							" --fq1 " + p.Fastq_file_1 +" -k " + p.kmerlen + " -N " + p.linkerreads + " -s 0 -e 0 --score 12 " +
+							"--prefix " + outPrefix + ".k" + p.kmerlen + " --minlinker 13 "+ " --skip " + p.skipheader + " -p 0.05";
 					shellrun(mycmd, "2");
 				}else {
 					String mycmd = "java -cp "+p.PROGRAM_DIRECTORY+"/ChIA-PET.jar LGL.util.kmer "+
-							" --fq1 " + p.Fastq_file_1 +" --fq2 " + p.Fastq_file_2 +" -k " + p.kmerlen + " -N 100000 -s 0 -e 0 --score 12 " +
-							"--prefix " + outPrefix + ".k" + p.kmerlen + " --minlinker 13 "+ " --skip 1000000 -p 0.05";
+							" --fq1 " + p.Fastq_file_1 +" --fq2 " + p.Fastq_file_2 +" -k " + p.kmerlen + " -N " + p.linkerreads + " -s 0 -e 0 --score 12 " +
+							"--prefix " + outPrefix + ".k" + p.kmerlen + " --minlinker 13 "+ " --skip " + p.skipheader + " -p 0.05";
 					shellrun(mycmd, "2");
 				}
 				//prefix.k9.linker.txt
@@ -526,6 +532,9 @@ public class Main {
 					if(!p.ligation_site.equals("-")) {
 						System.out.println("[" + rightNow.getTime().toString() +"] Without restriction file, generating by ligation site!!!");
 						//generate res file by ligation site
+						if(p.genomefile.equals("")) {
+							p.genomefile = p.GENOME_INDEX;
+						}
 						File Gefile = new File(p.genomefile); 
 						if (!Gefile.exists()) {
 							System.out.println("Warning: Unvalid genome file path!!! "
@@ -622,8 +631,8 @@ public class Main {
 		}
 		if(p.FQMODE.equals("single-end")) {
 			p.MODE = "0";
-			p.EXTENSION_LENGTH = "1500";
-	    	p.MAPPING_CUTOFF = "20";
+			//p.EXTENSION_LENGTH = "1500";
+	    	//p.MAPPING_CUTOFF = "20";
 		}
 		
 		
@@ -714,6 +723,7 @@ public class Main {
 			System.exit(0);
 		}
 		
+		//step3 .bedpe
 		time = System.currentTimeMillis() / 1000;
 		writeFile(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".time.txt", String.valueOf(time), true);
 		if (Integer.valueOf(p.START_STEP) <= 3) {
@@ -730,6 +740,7 @@ public class Main {
 			System.exit(0);
 		}
 		
+		//step4 .bedpe.selected.unique.txt .bedpe.selected.pet.txt
 		if (Integer.valueOf(p.START_STEP) <= 4) {
 			rightNow = Calendar.getInstance();
 			System.out.println("[" + rightNow.getTime().toString() +"] Step4: Categorization of PETs ...");
@@ -742,6 +753,7 @@ public class Main {
 			System.exit(0);
 		}
 		
+		//step5 .bedpe.selected.unique.txt ipet spet opet
 		if (Integer.valueOf(p.START_STEP) <= 5) {
 			//macs2
 			if(!p.macs2.equalsIgnoreCase("N")) {
@@ -765,7 +777,10 @@ public class Main {
 					macs2F.write(runcmd);
 					macs2F.newLine();
 					runcmd = "macs2 callpeak -t " + outPrefix + ".allValidPairs.bed --keep-dup all -g " + 
-					      p.GENOME_LENGTH + " -f BED -n " + outPrefix;// -B  --verbose 1
+					      p.GENOME_LENGTH + " -f BED -n " + outPrefix + " " + p.broadpeak;// -B  --verbose 1
+					if(p.nomodel.equalsIgnoreCase("Y")) {
+						runcmd = runcmd + " --nomodel --extsize 147 -q 0.01 "; 
+					}
 					macs2F.write(runcmd);
 					macs2F.newLine();
 	
@@ -774,24 +789,103 @@ public class Main {
 					shell.runShell(outPrefix + ".callpeak.macs2.sh");
 					//new File(outPrefix + ".callpeak.macs2.sh").delete();
 					p.INPUT_ANCHOR_FILE = outPrefix+ "_peaks.narrowPeak";
+					if(!p.broadpeak.equals("")) {
+						p.INPUT_ANCHOR_FILE = outPrefix+ "_peaks.broadPeak";
+					}
+					
+					File file_a = new File(p.INPUT_ANCHOR_FILE);
+					if(file_a.length() == 0 && !p.nomodel.equalsIgnoreCase("Y")) {
+						BufferedWriter macs2F_nomodel = new BufferedWriter(new FileWriter(outPrefix + 
+								".callpeak.macs2-nomodel.sh", false));
+						macs2F_nomodel.write("## macs2 callpeak with no model");
+						macs2F_nomodel.newLine();
+						runcmd = "macs2 callpeak -t " + outPrefix + ".allValidPairs.bed --keep-dup all -g " + 
+							      p.GENOME_LENGTH + " -f BED -n " + outPrefix + " --nomodel --extsize 147 -q 0.01" + " " + p.broadpeak;
+						macs2F_nomodel.write(runcmd);
+						macs2F_nomodel.newLine();
+						macs2F_nomodel.close();
+				    	//Shell shell = new Shell();
+						shell.runShell(outPrefix + ".callpeak.macs2-nomodel.sh");
+					}
+
 				}
 			}
-			
+
 			if(!p.INPUT_ANCHOR_FILE.equals("null")) {
+				String panchor = "N";
+				if(!p.macs2.equals("N")) {
+					BufferedReader reader = new BufferedReader(new FileReader(p.INPUT_ANCHOR_FILE));
+					String data; int Npeak = 0;
+					while((data = reader.readLine()) != null) {
+						Npeak++;
+					}
+					if(Npeak < p.peakcutoff || p.addcluster.equalsIgnoreCase("Y")) {
+						//find cluster as loop
+						String temp_len = p.EXTENSION_LENGTH;
+						p.EXTENSION_LENGTH = "500";
+						findpeak findpeak = new findpeak(p);
+						findpeak.run();
+						p.EXTENSION_LENGTH = temp_len;
+						panchor = "Y";
+					}
+				}
+				
 				String outPrefix = p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + "/" + p.OUTPUT_PREFIX;
 				BufferedWriter anchor2bedpe = new BufferedWriter(new FileWriter(outPrefix + 
 						".anchor2bedpe.sh", false));
 				anchor2bedpe.write("## anchor to bedpe");
 				anchor2bedpe.newLine();
-				
 				String runcmd="bedtools slop -i " + p.INPUT_ANCHOR_FILE + " -g " + p.CHROM_SIZE_INFO + 
-						" -b " + p.EXTENSION_LENGTH + " | bedtools merge -d 256 > " + outPrefix + "_peaks.slopPeak";
+						" -b " + p.EXTENSION_LENGTH + " > "+ outPrefix + ".cpt.exd.peak";
 				anchor2bedpe.write(runcmd);
 				anchor2bedpe.newLine();
-				runcmd="awk 'BEGIN{OFS=\"\\t\";i=1}{print $1,$2,$3,\"peak_\"i;i=i+1}' " +  outPrefix  + "_peaks.slopPeak > tmp.bed; mv tmp.bed " + 
-						outPrefix  + "_peaks.slopPeak";
+				
+				if(p.shortestPeak>0) {
+					runcmd="awk -v OFS=\"\\t\" -v minlen=" + p.shortestPeak + " '{if($3-$2>=minlen){print $0}else{middle=int(minlen/2); summit=int(($3+$2)/2); if(summit>middle){m1=summit-middle}else{m1=0}; m2=summit+middle; $2=m1; $3=m2; print $0}}' " + outPrefix+ ".cpt.exd.peak | sort -k1,1 -k2,2n -k3,3n > " + outPrefix + ".cpt.exd.srt.peak";	
+					anchor2bedpe.write(runcmd);
+					anchor2bedpe.newLine();
+					
+					runcmd="rm "+outPrefix+".cpt.exd.peak";
+					anchor2bedpe.write(runcmd);
+					anchor2bedpe.newLine();
+				}else {
+					runcmd="mv "+outPrefix+".cpt.exd.peak "+outPrefix+".cpt.exd.srt.peak";
+					anchor2bedpe.write(runcmd);
+					anchor2bedpe.newLine();
+				}
+				
+				if(panchor.equals("Y")) {
+					runcmd = "sort -k1,1V -k2,2n -k3,3n " + outPrefix+ ".panchor.bed | uniq > tmp.bed; mv tmp.bed " + outPrefix+ ".panchor.bed";
+					anchor2bedpe.write(runcmd);
+					anchor2bedpe.newLine();
+					runcmd="awk -v OFS=\"\\t\" '{print $1,$2,$3}' " + outPrefix+".cpt.exd.srt.peak " + outPrefix+ ".panchor.bed | sort -k1,1V -k2,2n -k3,3n | uniq > tmp.bed; mv tmp.bed " + outPrefix+".cpt.exd.srt.peak";
+					anchor2bedpe.write(runcmd);
+					anchor2bedpe.newLine();
+				}
+				
+				runcmd= "bedtools merge -d 256 -i "+outPrefix+".cpt.exd.srt.peak > " + outPrefix + ".cpt.merge.peak";
 				anchor2bedpe.write(runcmd);
 				anchor2bedpe.newLine();
+				
+				runcmd="rm "+outPrefix+".cpt.exd.srt.peak";
+				anchor2bedpe.write(runcmd);
+				anchor2bedpe.newLine();
+				
+				if(p.shortestAnchor>0) {
+					runcmd="awk -v OFS=\"\\t\" -v minlen=" + p.shortestAnchor + " '{if($3-$2>=minlen){print $0}else{middle=int(minlen/2); summit=int(($3+$2)/2); if(summit>middle){m1=summit-middle}else{m1=0}; m2=summit+middle; $2=m1; $3=m2; print $0}}' "  + outPrefix  + ".cpt.merge.peak | bedtools merge -i - > "+outPrefix+".cpt_peaks.tmp.bed; mv "+outPrefix+".cpt_peaks.tmp.bed " + outPrefix  + ".cpt.merge.peak";	
+					anchor2bedpe.write(runcmd);
+					anchor2bedpe.newLine();
+				}
+				
+			    runcmd="awk 'BEGIN{OFS=\"\\t\";i=1}{print $1,$2,$3,\"peak_\"i;i=i+1}' " +  outPrefix  + ".cpt.merge.peak > "+outPrefix+"_peaks.slopPeak";
+				anchor2bedpe.write(runcmd);
+				anchor2bedpe.newLine();
+				//runcmd="mv cpt_peaks.tmp.bed " + outPrefix  + "_peaks.slopPeak";
+				runcmd="rm "+outPrefix+".cpt.merge.peak";
+				anchor2bedpe.write(runcmd);
+				anchor2bedpe.newLine();
+				
+				
 				runcmd="awk '$1!=$4 || $6-$2>=" + p.SELF_LIGATION_CUFOFF + "' " + outPrefix + ".bedpe.selected.unique.txt > " + outPrefix + ".bedpe.selected.unique.validpet.txt";
 				anchor2bedpe.write(runcmd);
 				anchor2bedpe.newLine();
@@ -799,7 +893,7 @@ public class Main {
 				runcmd="pairToBed -a " + outPrefix + ".bedpe.selected.unique.validpet.txt -b " + outPrefix + "_peaks.slopPeak -type both > " + outPrefix + ".rmdup.bedpe.tmp";
 				anchor2bedpe.write(runcmd);
 				anchor2bedpe.newLine();
-								
+												
 				anchor2bedpe.close();
 				Shell shell = new Shell();
 				shell.runShell(outPrefix + ".anchor2bedpe.sh");
@@ -807,7 +901,7 @@ public class Main {
 				peak2interaction.main(new String[]{outPrefix + ".rmdup.bedpe.tmp", outPrefix + ".cluster.filtered"});
 				p.INPUT_ANCHOR_FILE = outPrefix + "_peaks.slopPeak";
 				p.EXTENSION_LENGTH = "150"; //cause ipet is only keep start
-				p.EXTENSION_MODE = "0"; //0 only extend to downstream.
+				//p.EXTENSION_MODE = "1"; //0 only extend to downstream.
 				
 				//delete
 				if(p.keeptemp.equals("N")) {
@@ -816,6 +910,7 @@ public class Main {
 				}
 			}
 			
+			//cluster mode
 			if(p.INPUT_ANCHOR_FILE.equals("null")) {
 				rightNow = Calendar.getInstance();
 				System.out.println("[" + rightNow.getTime().toString() +"] Step5: Interaction Calling ...");
@@ -823,10 +918,23 @@ public class Main {
 				interactionCalling.run();
 			}
 			
+			String outPrefix = p.OUTPUT_DIRECTORY + "/" + p.OUTPUT_PREFIX + "/" + p.OUTPUT_PREFIX;
+			BufferedWriter anchor2bedpe = new BufferedWriter(new FileWriter(outPrefix + 
+					".validanchor.sh", false));
+			anchor2bedpe.write("## get unique anchor");
+			anchor2bedpe.newLine();
+			String runcmd="awk -v OFS=\"\\t\" '{print $1,$2,$3; print $7,$8,$9}' " + outPrefix + ".cluster.filtered | sort -k1,1 -k2,2n -k3,3n | uniq > " + outPrefix + ".cluster.filtered.validunique.anchor";
+			anchor2bedpe.write(runcmd);
+			anchor2bedpe.newLine();
+											
+			anchor2bedpe.close();
+			Shell shell = new Shell();
+			shell.runShell(outPrefix + ".validanchor.sh");
+			
 			System.out.println("[" + rightNow.getTime().toString() +"] Pvalue calculation ...");
 			Pvalues pValues = new Pvalues(p);
-			pValues.calculation(); //ipet one-read count in anchor.
-			pValues.globalTag(); 
+			pValues.calculation(); //ipet one-read count in anchor. ipet to aln, count tag
+			pValues.globalTag();
 			pValues.calculate();
 		}
 		

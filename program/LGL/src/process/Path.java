@@ -49,6 +49,8 @@ public class Path {
 	String PVALUE_CUTOFF_PEAK = "0.00001";
 	String INPUT_ANCHOR_FILE = "null";
 	String macs2 = "N";
+	String nomodel = "N";
+	String broadpeak = "";
 	String PVALUE_CUTOFF_INTERACTION = "0.05";
 	String FQMODE = "paired-end";
 	String XOR_cluster = "N";
@@ -59,6 +61,11 @@ public class Path {
 	public String search_all_linker = "N";
 	public int printallreads = 0; //0 print all, 1 print known +-
 	String restrictionsiteFile = "None";
+	public int shortestAnchor = 0;
+	public int shortestPeak = 1500;
+	String skipheader = "1000000";
+	String linkerreads = "100000";
+	String addcluster = "N";
 	//public boolean hichipmode = false;
 	String hichipM = "N";
 	String keeptemp = "N";
@@ -66,6 +73,7 @@ public class Path {
 	String[] ligation_sites;
 	String genomefile = "";
 	int Ngenome = 0;
+	int peakcutoff = 10000;
 	HashMap<String, Integer> chrMAP = new HashMap<>();
 	HashMap<Integer, String> chrMAP_r = new HashMap<>();
 	int minfragsize = 20; //20
@@ -77,6 +85,7 @@ public class Path {
 	String deletesam = "N";
 	String fastp = "";
 	String skipmap = "N";
+	String bamout = "N";
 	String MAP_ambiguous = "N";
 	public String AutoLinker = "true";
 	public String kmerlen = "9";
@@ -110,7 +119,7 @@ public class Path {
 			site = "G^ANTC";
 		}else if(ligation_site.equalsIgnoreCase("AluI")) {
 			site = "AG^CT";
-		}else if(ligation_site.contains("^")) {
+		}else if(!ligation_site.contains("^")) {
 			System.out.println("Error: the restriction position has to be specified using '^'\n"
 					+ "Please, use '^' to specify the cutting position\n"
 					+ "i.e A^GATCT for HindIII digestion.\n");
@@ -196,6 +205,8 @@ public class Path {
 				MAP_ambiguous = args[i + 1];
 			} else if (args[i].equals("--skipmap")) {
 				skipmap = args[i + 1];
+			} else if (args[i].equals("--bamout")) {
+				bamout = args[i + 1];
 			} else if (args[i].equals("--printreadID")) {
 				printreadID = args[i + 1];
 			} else if (args[i].equals("--zipbedpe")) {
@@ -206,6 +217,16 @@ public class Path {
 				deletesam = args[i + 1];
 			} else if (args[i].equals("--printallreads")) {
 				printallreads =  Integer.parseInt(args[i + 1]);
+			} else if (args[i].equals("--shortestA")) {
+				shortestAnchor =  Integer.parseInt(args[i + 1]);
+				if(shortestAnchor>5000) {
+					shortestAnchor = 5000;
+				}
+			} else if (args[i].equals("--shortestP")) {
+				shortestPeak =  Integer.parseInt(args[i + 1]);
+				if(shortestPeak>5000) {
+					shortestPeak = 5000;
+				}
 			} else if (args[i].equals("--search_all_linker")) {
 				search_all_linker =  args[i + 1];
 			} else if (args[i].equals("--XOR_cluster")) {
@@ -217,6 +238,8 @@ public class Path {
 				}
 			} else if (args[i].equals("--keeptemp")) {
 				keeptemp = args[i + 1];
+			} else if (args[i].equals("--addcluster")) {
+				addcluster = args[i + 1];
 			} else if (args[i].equals("--ResRomove")) {
 				removeResblock = args[i + 1];
 			}else if (args[i].equals("--restrictionsiteFile")) {
@@ -243,6 +266,8 @@ public class Path {
 				maxInsertsize = Integer.parseInt(args[i + 1]);
 			} else if (args[i].equals("--output")) {
 				OUTPUT_DIRECTORY = args[i + 1];
+			} else if (args[i].equals("--peakcutoff")) {
+				peakcutoff = Integer.parseInt(args[i + 1]);
 			} else if(args[i].equals("--mapall")) {
 				ALLMAP = args[i + 1];
 			} else if(args[i].equals("--map2linker")) {
@@ -284,6 +309,10 @@ public class Path {
 				//checkPath(args[i + 1]);
 				AutoLinker="false";
 				necessary++;
+			} else if (args[i].equals("--skipheader")) {
+				skipheader = args[i + 1];
+			} else if (args[i].equals("--linkerreads")) {
+				linkerreads = args[i + 1];
 			} else if (args[i].equals("--minimum_linker_alignment_score")) {
 				minimum_linker_alignment_score = args[i + 1];
 				necessary++;
@@ -364,7 +393,11 @@ public class Path {
 				INPUT_ANCHOR_FILE = args[i + 1];
 			} else if (args[i].equals("--macs2")) {
 				macs2 = args[i + 1];
-			} else if (args[i].equals("--PVALUE_CUTOFF_INTERACTION")) {
+			} else if (args[i].equals("--nomodel")) {
+				nomodel = args[i + 1];
+			} else if (args[i].equals("--broadpeak")) {
+				broadpeak = " --broad --broad-cutoff 0.05";
+			}  else if (args[i].equals("--PVALUE_CUTOFF_INTERACTION")) {
 				PVALUE_CUTOFF_INTERACTION = args[i + 1];
 			} else if (args[i].equals("--CYTOBAND_DATA")) {
 				CYTOBAND_DATA = args[i + 1];

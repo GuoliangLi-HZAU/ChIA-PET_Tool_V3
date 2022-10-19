@@ -32,7 +32,7 @@ SORTED_CHUNK_FILES=$CHUNK_FILE_PREFIX*.sorted
 
         for file in $CHUNK_FILE_PREFIX*
         do
-                LC_ALL=C sort -k1,1V -k4,4V -k3,3r -k6,6r -k2,2n -k5,5n $file > $file.sorted &
+                LC_ALL=C sort -k1,1V -k4,4V -k2,2n $file > $file.sorted &
         done
         wait
         

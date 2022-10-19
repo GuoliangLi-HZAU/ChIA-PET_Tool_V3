@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Vector;
 
@@ -46,6 +47,20 @@ public class REGION implements Comparable {
         this.setStart(anotherRegion.getStart());
         this.setEnd(anotherRegion.getEnd());
         this.setAnnotation(anotherRegion.getAnnotation());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chrom, start, end);//annotation
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        REGION region = (REGION) o;
+        return start == region.start && end == region.end && 
+                chrom.equals(((REGION) o).chrom);
     }
 
     // the separator is TAB
@@ -99,7 +114,7 @@ public class REGION implements Comparable {
         }
         return result;
     }
-
+    
     /**
      * @return the chrom
      */
