@@ -3,6 +3,7 @@ ChIA-PET Tool V3
 Introduction
 =
 Chromatin Interaction Analysis with Paired-End Tag (ChIA-PET) sequencing is a technology to study genome-wide long-range chromatin interactions bound by protein factors. ChIA-PET Tool V3, a software package for automatic processing of ChIA-PET sequence data, including: 
+0.	linker detect (--stop_step 0, only run linker detect)
 1.	linker filtering
 2.	mapping the paired-end reads to a reference genome
 3.	purifying the mapped reads
@@ -75,8 +76,9 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
         only needed for hichip data
     --genomefile\tgenome fasta file path, needed for with --ligation_site and without --restrictionsiteFile only needed for hichip data
 
-    --start_step: start with which step, 1: linker filtering; 2: mapping to genome; 3: removing redundancy; 4: 
+    --start_step: start with which step, 1: linker filtering; 2: mapping to genome; 3: removing redundancy; 4:
     categorization of PETs; 5: peak calling; 6: interaction calling; 7: visualizing, default: 1"
+    --stop_step: stop with which step, see above
     --output: specifies the directory to store the output data from ChIA-PET Tool V3, 
     note: please specify the absolute path of output directory.
     --prefix: specifies the prefix of all the output files, default: out.
