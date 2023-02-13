@@ -523,6 +523,10 @@ public class Main {
 			}
 		}
 		
+		if(Integer.valueOf(p.STOP_STEP) <= 0) {
+			System.exit(0);
+		}
+		
 		if( Integer.valueOf(p.START_STEP) <= 1 && (p.hichipM.equals("Y") || p.hichipM.equals("O") ) ) {
 			p.MERGE_DISTANCE = "-1";
 			System.out.println("[" + rightNow.getTime().toString() +"] HiChIP mode " + p.hichipM);
