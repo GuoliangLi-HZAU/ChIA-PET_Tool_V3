@@ -53,7 +53,9 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
     --mode: There are two modes for ChIA-PET Tool V3. 0 for short read, 1 for long read.
     --fastq1: path of read1 fastq file.
     --fastq2: path of read2 fastq file.
-    --autolinker: detect linker by our program, then no need provide --linker and --mode paramater.
+    --autolinker: detect linker by our program, then no need provide --linker and --mode paramater. with --stop_step 0 
+        When the parameter "--stop_step 0" is present, only the automatic detection linker program will be run.
+        When the parameter "--stop_step 1" is present, only the automatic detection linker AND linker filter program will be run.
     --linker: linker file.
     --fastp: fastp path, strong suggest for ChIA-PET data.
     --minimum_linker_alignment_score: Specifies the allowed minimum alignment score.

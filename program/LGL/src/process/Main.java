@@ -300,6 +300,8 @@ public class Main {
 			System.out.println("    --fastq1\tpath of read1 fastq file");
 			System.out.println("    --fastq2\tpath of read2 fastq file");
 			System.out.println("    --autolinker\tdetect linker by our program, true [default] or false, then no need provide --linker and --mode paramater.");
+			System.out.println("      When the parameter --stop_step 0 is present, only the automatic detection linker program will be run.");
+			System.out.println("      When the parameter --stop_step 1 is present, only the automatic detection linker AND linker filter program will be run.");
 			System.out.println("    --mode\tmode of tool, 0: short read; 1: long read, need for ChIA-PET data");
 			System.out.println("    --linker\tpath of linker file, need for ChIA-PET mode");
 			System.out.println("    --fastp\tfastp path, strong suggest for ChIA-PET data.");
