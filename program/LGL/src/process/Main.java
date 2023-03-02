@@ -293,7 +293,7 @@ public class Main {
     }
 	
 	public static void main(String []args) throws IOException, InterruptedException {
-		if (args.length < 22) {
+		if (args.length < 5) {
 			System.out.println("Error: please set the necessary parameters");
 			System.out.println("Usage: java -jar <path of ChIA_PET.jar> [options]");
 			System.out.println("Necessary options:");
