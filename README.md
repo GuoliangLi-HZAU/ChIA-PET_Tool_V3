@@ -117,8 +117,12 @@ Before excuting the ChIA-PET Tool V3, you need to create genome index by BWA ref
     --map_ambiguous: Also mapping ambiguous reads without linker. default: N
     --skipmap: Skip mapping read1 and read2, start from paired R1.sam and R2.sam, only valid in HiChIP mode now. default: N
     --macs2: macs2 path, using macs2 callpeak to detect anchor peak with alignment file. default: N
-    --XOR_cluster: Whether keep loops if only one side of anchor is overlap with peak. default: N
-			
+	--nomodel macs2 parameter, Whether or not to build the shifting model in macs2. default: N
+	--shortestP extend and keep shorest peak length longer than N for loop calling, suggest 1500, user can set 0 to skip this step. default: 1500
+	--shortestA extend and keep shorest anchor length longer than N for loop calling, user can set 0 to skip this step. default: 0
+	--XOR_cluster Whether keep loops if only one side of anchor is overlap with peak. default: N
+	--addcluster Keep all regions with more than 2 count reads as potential anchor for calling loop. default: N. if peaks number of macs2 smaller than 10000, this paramater will work automaticly.
+
     
 Especially, the directories of data should be set properly to make sure that the programs could run smoothly. ChIA-PET Tool V3 will create a folder named by `OUTPUT_PREFIX` in the `OUTPUT_DIRECTORY`. The default value of `OUTPUT_DIRECTORY` is in the master folder "`ChIA-PET_Tool_V3/`" and `OUTPUT_PREFIX` is "out". Examples of `CHROM_SIZE_INFO` and `CYTOBAND_DATA` are both in the master folder "`ChIA-PET_Tool_V3/chromInfo/`". We recommend users to select one or create a new one in that folder.
 

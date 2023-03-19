@@ -650,6 +650,9 @@ public class Main {
 					if(!p.ligation_site.equals("-")) {
 						System.out.println("[" + rightNow.getTime().toString() +"] generating restriction file by ligation site!!!");
 						//generate res file by ligation site
+						if(p.genomefile.equals("")) {
+							p.genomefile = p.GENOME_INDEX;
+						}
 						File Gefile = new File(p.genomefile); 
 						if (!Gefile.exists()) {
 							System.out.println("Warning: Unvalid genome file path!!! "
