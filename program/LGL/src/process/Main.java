@@ -844,8 +844,13 @@ public class Main {
 						".anchor2bedpe.sh", false));
 				anchor2bedpe.write("## anchor to bedpe");
 				anchor2bedpe.newLine();
-				String runcmd="bedtools slop -i " + p.INPUT_ANCHOR_FILE + " -g " + p.CHROM_SIZE_INFO + 
+				String runcmd="";
+				if( Integer.parseInt(p.EXTENSION_LENGTH) >0) {
+				    runcmd="bedtools slop -i " + p.INPUT_ANCHOR_FILE + " -g " + p.CHROM_SIZE_INFO + 
 						" -b " + p.EXTENSION_LENGTH + " > "+ outPrefix + ".cpt.exd.peak";
+				}else {
+					runcmd="cp " + p.INPUT_ANCHOR_FILE + " " + outPrefix + ".cpt.exd.peak";
+				}
 				anchor2bedpe.write(runcmd);
 				anchor2bedpe.newLine();
 				

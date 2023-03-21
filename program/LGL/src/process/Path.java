@@ -73,7 +73,7 @@ public class Path {
 	String[] ligation_sites;
 	String genomefile = "";
 	int Ngenome = 0;
-	int peakcutoff = 10000;
+	int peakcutoff = 5000; //10000
 	HashMap<String, Integer> chrMAP = new HashMap<>();
 	HashMap<Integer, String> chrMAP_r = new HashMap<>();
 	int minfragsize = 20; //20
