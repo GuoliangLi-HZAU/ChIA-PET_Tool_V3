@@ -242,28 +242,75 @@ public class ReadPair implements Comparable<ReadPair> {
         }
     }
 
-	@Override
-	public int compareTo(ReadPair compareRP) {
+    @Override
+    public int compareTo(ReadPair compareRP) {
+    	//System.out.println(this.readid + " " + this.getpaired() + " " + compareRP.getpaired());
+        if (this == null || compareRP == null) {
+            return 0;
+        }
+
+        if (this.getpaired() != compareRP.getpaired()) { // single vs paired
+            if (this.getpaired() == 1) {
+                return -1;
+            } else if (compareRP.getpaired() == 1) {
+                return 1;
+            } else {
+                return Integer.compare(compareRP.getmapq(), this.getmapq());
+            }
+        } else if (this.getpaired() == 1) { // this paired and compareRP paired
+        	int span1 = Math.abs(compareRP.pos1 - compareRP.pos2);
+            int span2 = Math.abs(this.pos1 - this.pos2);
+            return Integer.compare(span1, span2);
+            //现在这里逻辑并不好，但是新版本报错Exception in thread "main" java.lang.IllegalArgumentException: Comparison method violates its general contract
+            //先用着
+            /*
+        	if(compareRP.getchrom1().equalsIgnoreCase(this.chrom1) && 
+        			compareRP.getchrom2().equalsIgnoreCase(this.chrom2) && this.chrom1.equalsIgnoreCase(this.chrom2)) {
+                int span1 = Math.abs(compareRP.pos1 - compareRP.pos2);
+                int span2 = Math.abs(this.pos1 - this.pos2);
+                System.out.println(this.chrom1 + " " + this.chrom2 + " " + span1 + " " + span2);
+                if(span1 == span2) {
+                	return Integer.compare(compareRP.getmapq(), this.getmapq());
+                }else {
+        		    return Integer.compare(span1, span2);
+                }
+            }else {
+            	System.out.println(compareRP.chrom1 + " " + compareRP.chrom2 + " " + this.chrom1 + " " + this.chrom2 + 
+            			" " + compareRP.getmapq() + " " + this.getmapq());
+                return Integer.compare(compareRP.getmapq(), this.getmapq());
+            }
+            */
+        } else {
+            return Integer.compare(compareRP.getmapq(), this.getmapq());
+        }
+    }
+	
+	public int compareTo_test(ReadPair compareRP) {
 		// TODO Auto-generated method stub
-		if(compareRP.getpaired() != this.getpaired()) {
-			if(this.getpaired() == 1) {
-				return -1;
-			}else if(compareRP.getpaired() == 1) {
-				return 1;
-			}else {
-				return compareRP.getmapq() - this.getmapq();
+		if(this != null && compareRP != null) {
+			if(compareRP.getpaired() != this.getpaired()) {
+				if(this.getpaired() == 1) {
+					return -1;
+				}else if(compareRP.getpaired() == 1) {
+					return 1;
+				}else {
+					return compareRP.getmapq() - this.getmapq();
+				}
+			}else { // l and r is same : single or paired
+				if(this.getpaired() == 1)
+			    {
+				    int asbspan = this.getdiffspan(compareRP);
+				    if(asbspan<100) {
+					    return compareRP.getmapq() - this.getmapq();
+				    }else {
+					    return compareRP.getspan() - this.getspan();
+				    }
+			    } else {
+				    return compareRP.getmapq() - this.getmapq();
+			    }
 			}
 		}else {
-			if(this.getpaired() == 1) {
-				int asbspan = this.getdiffspan(compareRP);
-				if(asbspan<100) {
-					return compareRP.getmapq() - this.getmapq();
-				}else {
-					return compareRP.getspan() - this.getspan();
-				}
-			} else {
-				return compareRP.getmapq() - this.getmapq();
-			}
+			return 0;
 		}
 
 	}

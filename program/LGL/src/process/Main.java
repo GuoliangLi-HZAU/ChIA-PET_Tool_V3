@@ -845,7 +845,7 @@ public class Main {
 				anchor2bedpe.write("## anchor to bedpe");
 				anchor2bedpe.newLine();
 				String runcmd="";
-				if( Integer.parseInt(p.EXTENSION_LENGTH) >0) {
+				if( Integer.parseInt(p.EXTENSION_LENGTH) > 0) {
 				    runcmd="bedtools slop -i " + p.INPUT_ANCHOR_FILE + " -g " + p.CHROM_SIZE_INFO + 
 						" -b " + p.EXTENSION_LENGTH + " > "+ outPrefix + ".cpt.exd.peak";
 				}else {
