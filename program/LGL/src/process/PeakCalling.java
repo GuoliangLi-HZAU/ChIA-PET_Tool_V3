@@ -666,7 +666,9 @@ public class PeakCalling {
     }
 
     public void statisticsReport() {
-    	copy(new File(p.PROGRAM_DIRECTORY+"/ChIA-PET_Report"), new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/files_for_report"));
+    	//copy(new File(p.PROGRAM_DIRECTORY+"/ChIA-PET_Report"), new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/files_for_report"));
+        copy(new File(p.PROGRAM_DIRECTORY+"/ChIA-PET_Report"),
+                      new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".ChIA-PET_Report"));
     	String line = "R --vanilla --slave --args "+p.PROGRAM_DIRECTORY+" "+p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/files_for_report "+p.OUTPUT_PREFIX+" "+
     	p.CYTOBAND_DATA+" "+p.SPECIES+" "+p.MODE+" < "+p.PROGRAM_DIRECTORY+"/RScript/ChIA-PET_Report.r";
     	//lf.writeFile(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh", line, false);
@@ -674,13 +676,13 @@ public class PeakCalling {
     	Shell shell = new Shell();
         //shell.runShell(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh");
     	shell.runShell(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh");
-        File f = new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".ChIA-PET_Report");
-        if (f.exists()) {
-        	deleteFile(f);
-        }
-        copy(new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/files_for_report/ChIA-PET_Report/"), 
-        		new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".ChIA-PET_Report"));
-        deleteFile(new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/files_for_report/ChIA-PET_Report/"));
+        //File f = new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".ChIA-PET_Report");
+        //if (f.exists()) {
+        //	deleteFile(f);
+        //}
+        //copy(new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/files_for_report/ChIA-PET_Report/"), 
+        //		new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".ChIA-PET_Report"));
+        //deleteFile(new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/files_for_report/ChIA-PET_Report/"));
     }
     
     /**

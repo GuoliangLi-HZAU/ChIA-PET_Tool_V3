@@ -982,7 +982,7 @@ public class Main {
 			peakCalling.statisticsReport();
 			peakCalling.genomicBrowser();
 			//new File(p.PROGRAM_DIRECTORY+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh").delete();
-			new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh").delete();
+			//new File(p.OUTPUT_DIRECTORY+"/"+p.OUTPUT_PREFIX+"/"+p.OUTPUT_PREFIX+".peakcalling2.sh").delete();
 		}
 		if(Integer.valueOf(p.STOP_STEP) <= 7) {
 			System.exit(0);
