@@ -10,7 +10,7 @@ program_dir <- args[1]
 setwd(args[2])
 input_prefix <- args[3]
 #output_dir <- paste(args[2], "/ChIA-PET_Report/images/", sep = "")
-output_dir <- paste(args[2], "../" , input_prefix, ".ChIA-PET_Report/images/", sep = "")
+output_dir <- paste(args[2], "/../" , input_prefix, ".ChIA-PET_Report/images/", sep = "")
 cytoband_file_path <- args[4]
 species <- as.numeric(args[5])
 #program_dir <- "/home/lycai/Project/test1/program"
